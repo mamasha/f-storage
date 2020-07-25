@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "f-client", "f-client\f-client.csproj", "{0FB40E39-9CFC-4729-A713-9C97DE6F993B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "f-server", "f-server\f-server.csproj", "{CED9D1C4-3F2F-4974-8A66-F0F2DA61FA21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "f-core", "f-core\f-core.csproj", "{4E39C2F8-5A4F-4FCB-BF25-9ABD83819274}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "f-nunit", "f-nunit\f-nunit.csproj", "{54485DAA-3FEA-44F2-891A-15C9469A1ABA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FB40E39-9CFC-4729-A713-9C97DE6F993B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FB40E39-9CFC-4729-A713-9C97DE6F993B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED9D1C4-3F2F-4974-8A66-F0F2DA61FA21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED9D1C4-3F2F-4974-8A66-F0F2DA61FA21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E39C2F8-5A4F-4FCB-BF25-9ABD83819274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E39C2F8-5A4F-4FCB-BF25-9ABD83819274}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54485DAA-3FEA-44F2-891A-15C9469A1ABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54485DAA-3FEA-44F2-891A-15C9469A1ABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8DBC7E3E-491A-4456-8045-180C58F1DC6C}
+	EndGlobalSection
+EndGlobal
