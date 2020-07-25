@@ -1,9 +1,27 @@
 ## f-storage test project
 
-### Client side
+- [Client side Gui](#client-side-gui)
+- [Server side Gui](#server-side-gui)
+- [Threading model](#threading-model)
+- [Software layers](#software-layers)
+- [Error handling](#error-handling)
+- [Protocol](#protocol)
+- [Security concerns](#security concerns)
+- [Other concerns](#other-concerns)
+- [Coding convention](#coding-convention)
+- [Deployment](#deployment)
+- [Project structure](#project-structure)
+- [Programming to interfaces](#programming-to-interfaces)
+- [Third parties](#third-parties)
+- [Unit tests](#unit-tests)
+- [High level design](#high-level-design)
+- [Class level design](#class-level-design)
+
+
+### Client side GUI
 ![Client](./client-gui.png)
 
-### Server side
+### Server side GUI
 ![Server](./server-gui.png)
 
 ### Threading model
@@ -11,7 +29,7 @@
 
 ### Software layers
 
-### Software Concerns 
+### Other concerns 
 - 
 
 ### Error handling
@@ -19,23 +37,23 @@
 ### Protocol
 - Transaction per connection
 
-### Coding convension
+### Coding convention
 
-### Deployment, platform and runtime
+### Deployment
 
 ### Project structure
 
 ### Programming to interfaces
 
-### Security considirations
+### Security concerns
 
 ### Third parties
 
 ### Unit tests
 
-### Highlevel design
+### High level design
 
-### Classlevel design
+### Class level design
 
 interface IAuthenticator {
     void Authenticate(Request request);
