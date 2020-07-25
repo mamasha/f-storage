@@ -37,6 +37,8 @@
             this.buttonDownload = new System.Windows.Forms.Button();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.richTextResult = new System.Windows.Forms.RichTextBox();
+            this.textUserName = new System.Windows.Forms.TextBox();
+            this.textPassword = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // textServerName
@@ -44,7 +46,7 @@
             this.textServerName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.textServerName.Location = new System.Drawing.Point(23, 21);
             this.textServerName.Name = "textServerName";
-            this.textServerName.Size = new System.Drawing.Size(782, 82);
+            this.textServerName.Size = new System.Drawing.Size(508, 82);
             this.textServerName.TabIndex = 0;
             this.textServerName.Text = "Server name";
             // 
@@ -52,17 +54,17 @@
             // 
             this.textPort.Enabled = false;
             this.textPort.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textPort.Location = new System.Drawing.Point(885, 21);
+            this.textPort.Location = new System.Drawing.Point(639, 21);
             this.textPort.Name = "textPort";
             this.textPort.ReadOnly = true;
-            this.textPort.Size = new System.Drawing.Size(206, 82);
+            this.textPort.Size = new System.Drawing.Size(452, 82);
             this.textPort.TabIndex = 0;
             this.textPort.Text = "1234";
             // 
             // textLocalPath
             // 
             this.textLocalPath.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textLocalPath.Location = new System.Drawing.Point(23, 131);
+            this.textLocalPath.Location = new System.Drawing.Point(23, 243);
             this.textLocalPath.Name = "textLocalPath";
             this.textLocalPath.Size = new System.Drawing.Size(1068, 82);
             this.textLocalPath.TabIndex = 0;
@@ -71,7 +73,7 @@
             // textRemoteFileName
             // 
             this.textRemoteFileName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textRemoteFileName.Location = new System.Drawing.Point(23, 240);
+            this.textRemoteFileName.Location = new System.Drawing.Point(23, 352);
             this.textRemoteFileName.Name = "textRemoteFileName";
             this.textRemoteFileName.Size = new System.Drawing.Size(1068, 82);
             this.textRemoteFileName.TabIndex = 0;
@@ -80,7 +82,7 @@
             // buttonList
             // 
             this.buttonList.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonList.Location = new System.Drawing.Point(23, 361);
+            this.buttonList.Location = new System.Drawing.Point(23, 473);
             this.buttonList.Name = "buttonList";
             this.buttonList.Size = new System.Drawing.Size(227, 83);
             this.buttonList.TabIndex = 1;
@@ -91,7 +93,7 @@
             // buttonUpload
             // 
             this.buttonUpload.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonUpload.Location = new System.Drawing.Point(275, 361);
+            this.buttonUpload.Location = new System.Drawing.Point(275, 473);
             this.buttonUpload.Name = "buttonUpload";
             this.buttonUpload.Size = new System.Drawing.Size(227, 83);
             this.buttonUpload.TabIndex = 1;
@@ -102,7 +104,7 @@
             // buttonDownload
             // 
             this.buttonDownload.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonDownload.Location = new System.Drawing.Point(544, 361);
+            this.buttonDownload.Location = new System.Drawing.Point(544, 473);
             this.buttonDownload.Name = "buttonDownload";
             this.buttonDownload.Size = new System.Drawing.Size(292, 83);
             this.buttonDownload.TabIndex = 1;
@@ -113,7 +115,7 @@
             // buttonDelete
             // 
             this.buttonDelete.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonDelete.Location = new System.Drawing.Point(864, 361);
+            this.buttonDelete.Location = new System.Drawing.Point(864, 473);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(227, 83);
             this.buttonDelete.TabIndex = 1;
@@ -123,18 +125,38 @@
             // 
             // richTextResult
             // 
-            this.richTextResult.Location = new System.Drawing.Point(23, 480);
+            this.richTextResult.Location = new System.Drawing.Point(23, 592);
             this.richTextResult.Name = "richTextResult";
             this.richTextResult.ReadOnly = true;
             this.richTextResult.Size = new System.Drawing.Size(1068, 638);
             this.richTextResult.TabIndex = 2;
             this.richTextResult.Text = "";
             // 
-            // ClientGui
+            // textUserName
+            // 
+            this.textUserName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.textUserName.Location = new System.Drawing.Point(23, 129);
+            this.textUserName.Name = "textUserName";
+            this.textUserName.Size = new System.Drawing.Size(508, 82);
+            this.textUserName.TabIndex = 0;
+            this.textUserName.Text = "User name";
+            // 
+            // textPassword
+            // 
+            this.textPassword.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.textPassword.Location = new System.Drawing.Point(639, 129);
+            this.textPassword.Name = "textPassword";
+            this.textPassword.Size = new System.Drawing.Size(452, 82);
+            this.textPassword.TabIndex = 0;
+            this.textPassword.Text = "Password";
+            // 
+            // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1123, 1148);
+            this.ClientSize = new System.Drawing.Size(1123, 1253);
+            this.Controls.Add(this.textPassword);
+            this.Controls.Add(this.textUserName);
             this.Controls.Add(this.richTextResult);
             this.Controls.Add(this.buttonDelete);
             this.Controls.Add(this.buttonDownload);
@@ -144,7 +166,7 @@
             this.Controls.Add(this.textLocalPath);
             this.Controls.Add(this.textPort);
             this.Controls.Add(this.textServerName);
-            this.Name = "ClientGui";
+            this.Name = "ClientForm";
             this.Text = "ClientGui";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -162,6 +184,8 @@
         private System.Windows.Forms.Button buttonDownload;
         private System.Windows.Forms.Button buttonDelete;
         private System.Windows.Forms.RichTextBox richTextResult;
+        private System.Windows.Forms.TextBox textUserName;
+        private System.Windows.Forms.TextBox textPassword;
     }
 }
 

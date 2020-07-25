@@ -1,8 +1,10 @@
-﻿using System;
+﻿using f_core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +14,20 @@ namespace f_server
 {
     public partial class ServerGui : Form
     {
+        private readonly ITcpAcceptor _acceptor;
+        private readonly IUserManagement _users;
+
         public ServerGui()
         {
             InitializeComponent();
+
+            var config = File.ReadAllText("f-config.json").Parse<FConfig>();
+
+            var server = new FServer(config);
+            var acceptor = TcpAcceptor.New(server);
+
+            _acceptor = acceptor;
+            _users = server;
         }
         private void lockButtons()
         {
@@ -62,35 +75,59 @@ namespace f_server
             }
         }
 
+        private UserInfo getUserInfo()
+        {
+            var userName = textUserName.Text;
+            var password = textPassword.Text;
+            var folder = textFolder.Text;
+
+            return new UserInfo { 
+                UserName = userName,
+                Password = password,
+                Folder = folder
+            };
+        }
+
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await doIt(async () => {
                 log("List is clicked");
                 await Task.Delay(1000);
+                var list = _users.List();
+                log(list.ToJson());
             });
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            var userInfo = getUserInfo();
+
             await doIt(async () => {
                 log("Create is clicked");
                 await Task.Delay(1000);
+                await _users.Create(userInfo);
             });
         }
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            var userInfo = getUserInfo();
+
             await doIt(async () => {
                 log("Update is clicked");
                 await Task.Delay(1000);
+                await _users.Update(userInfo);
             });
         }
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            var userInfo = getUserInfo();
+
             await doIt(async () => {
                 log("Delete is clicked");
                 await Task.Delay(1000);
+                await _users.Delete(userInfo);
                 throw new ApplicationException("User is not found");
             });
         }

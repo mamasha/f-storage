@@ -64,7 +64,7 @@ namespace f_client
             }
         }
 
-        private IClient getServer()
+        private IStorage getServer()
         {
             var serverName = textServerName.Text;
             var port = int.Parse(textPort.Text);

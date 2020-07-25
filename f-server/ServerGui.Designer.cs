@@ -37,6 +37,7 @@
             this.textPort = new System.Windows.Forms.TextBox();
             this.textUserName = new System.Windows.Forms.TextBox();
             this.richTextResult = new System.Windows.Forms.RichTextBox();
+            this.textServerName = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // buttonDelete
@@ -95,9 +96,9 @@
             // textPassword
             // 
             this.textPassword.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textPassword.Location = new System.Drawing.Point(12, 124);
+            this.textPassword.Location = new System.Drawing.Point(611, 128);
             this.textPassword.Name = "textPassword";
-            this.textPassword.Size = new System.Drawing.Size(573, 82);
+            this.textPassword.Size = new System.Drawing.Size(469, 82);
             this.textPassword.TabIndex = 0;
             this.textPassword.Text = "Password";
             // 
@@ -105,19 +106,19 @@
             // 
             this.textPort.Enabled = false;
             this.textPort.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textPort.Location = new System.Drawing.Point(874, 14);
+            this.textPort.Location = new System.Drawing.Point(611, 14);
             this.textPort.Name = "textPort";
             this.textPort.ReadOnly = true;
-            this.textPort.Size = new System.Drawing.Size(206, 82);
+            this.textPort.Size = new System.Drawing.Size(469, 82);
             this.textPort.TabIndex = 0;
             this.textPort.Text = "1234";
             // 
             // textUserName
             // 
             this.textUserName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textUserName.Location = new System.Drawing.Point(12, 14);
+            this.textUserName.Location = new System.Drawing.Point(12, 128);
             this.textUserName.Name = "textUserName";
-            this.textUserName.Size = new System.Drawing.Size(573, 82);
+            this.textUserName.Size = new System.Drawing.Size(522, 82);
             this.textUserName.TabIndex = 0;
             this.textUserName.Text = "User name";
             // 
@@ -130,11 +131,23 @@
             this.richTextResult.TabIndex = 2;
             this.richTextResult.Text = "";
             // 
+            // textServerName
+            // 
+            this.textServerName.Enabled = false;
+            this.textServerName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.textServerName.Location = new System.Drawing.Point(12, 14);
+            this.textServerName.Name = "textServerName";
+            this.textServerName.ReadOnly = true;
+            this.textServerName.Size = new System.Drawing.Size(522, 82);
+            this.textServerName.TabIndex = 0;
+            this.textServerName.Text = "Server name";
+            // 
             // ServerGui
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1096, 1127);
+            this.Controls.Add(this.textServerName);
             this.Controls.Add(this.richTextResult);
             this.Controls.Add(this.textUserName);
             this.Controls.Add(this.textPort);
@@ -162,6 +175,7 @@
         private System.Windows.Forms.TextBox textPort;
         private System.Windows.Forms.TextBox textUserName;
         private System.Windows.Forms.RichTextBox richTextResult;
+        private System.Windows.Forms.TextBox textServerName;
     }
 }
 

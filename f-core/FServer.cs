@@ -2,17 +2,15 @@
 
 namespace f_core
 {
-    public class FServer : IClient, IServer
-    {
-        public static IClient New()
-        {
-            return new FServer();
-        }
+    public class FConfig
+    { }
 
-        private FServer()
+    public class FServer : IStorage, IUserManagement
+    {
+        public FServer(FConfig config)
         { }
 
-        async Task<SrvListResponse> IClient.ListFiles(SrvListRequest request)
+        async Task<SrvListResponse> IStorage.ListFiles(SrvListRequest request)
         {
             var response = new SrvListResponse {
                 RequestId = request.RequestId,
@@ -23,7 +21,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvUploadResponse> IClient.Upload(SrvUploadRequest request)
+        async Task<SrvUploadResponse> IStorage.Upload(SrvUploadRequest request)
         {
             var response = new SrvUploadResponse {
                 RequestId = request.RequestId
@@ -33,7 +31,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvDownloadResponse> IClient.Download(SrvDownloadRequest request, string fileName, string dstFolder)
+        async Task<SrvDownloadResponse> IStorage.Download(SrvDownloadRequest request, string fileName, string dstFolder)
         {
             var response = new SrvDownloadResponse {
                 RequestId = request.RequestId
@@ -43,7 +41,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvDeleteResponse> IClient.Delete(SrvDeleteRequest request, string fileName)
+        async Task<SrvDeleteResponse> IStorage.Delete(SrvDeleteRequest request, string fileName)
         {
             var response = new SrvDeleteResponse {
                 RequestId = request.RequestId
@@ -52,5 +50,20 @@ namespace f_core
             await Task.Delay(1000);
             return response;
         }
+
+        async Task<UserInfo[]> IUserManagement.List()
+        {
+            var list = new UserInfo[0];
+            return list;
+        }
+
+        async Task IUserManagement.Create(UserInfo request)
+        { }
+
+        async Task IUserManagement.Update(UserInfo request)
+        { }
+
+        async Task IUserManagement.Delete(UserInfo request)
+        { }
     }
 }

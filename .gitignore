@@ -6,6 +6,7 @@
 *.ncb
 obj/
 bin/
+deploy/
 Debug/
 Release/
 dist/

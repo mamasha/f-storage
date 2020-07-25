@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace f_core
 {
-    public class FClient : IClient
+    public class FClient : IStorage
     {
-        public static IClient New(string serverName, int port)
+        public static IStorage New(string serverName, int port)
         {
             return new FClient(serverName, port);
         }
@@ -20,7 +20,7 @@ namespace f_core
             return op;
         }
 
-        async Task<SrvListResponse> IClient.ListFiles(SrvListRequest request)
+        async Task<SrvListResponse> IStorage.ListFiles(SrvListRequest request)
         {
             var op = startOp(request);
 
@@ -33,7 +33,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvUploadResponse> IClient.Upload(SrvUploadRequest request)
+        async Task<SrvUploadResponse> IStorage.Upload(SrvUploadRequest request)
         {
             var file = File.Open(request.SrcPath, FileMode.Open);
             request.FileSize = file.Length;
@@ -51,7 +51,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvDownloadResponse> IClient.Download(SrvDownloadRequest request, string fileName, string dstFolder)
+        async Task<SrvDownloadResponse> IStorage.Download(SrvDownloadRequest request, string fileName, string dstFolder)
         {
             var file = File.Open(request.LocalPath, FileMode.Create);
 
@@ -68,7 +68,7 @@ namespace f_core
             return response;
         }
 
-        async Task<SrvDeleteResponse> IClient.Delete(SrvDeleteRequest request, string fileName)
+        async Task<SrvDeleteResponse> IStorage.Delete(SrvDeleteRequest request, string fileName)
         {
             var op = startOp(request);
 

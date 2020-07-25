@@ -2,7 +2,7 @@
 
 namespace f_core
 {
-    public interface IClient
+    public interface IStorage
     {
         Task<SrvListResponse> ListFiles(SrvListRequest request);
         Task<SrvUploadResponse> Upload(SrvUploadRequest request);
