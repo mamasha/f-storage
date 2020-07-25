@@ -99,19 +99,19 @@ Trade-off: re-using of an open connection vs simple programing model
 
 ### Class level design
 
-''' csharp
+``` csharp
 interface IServer {
     void AddUser(string userName, string password, string folder);
     void RemoveUser(string userName);
     void UpdatePassword(string userName, string password);
 }
-'''
+```
 
-''' csharp
+``` csharp
 interface IClient {
     string[] ListFiles(SrvRequest request);
     void Upload(SrvRequest request, string srcPath);
     void Download(SrvRequest request, string fileName, string dstFolder);
     void Delete(SrvRequest request, string fileName);
 }
-'''
+```
