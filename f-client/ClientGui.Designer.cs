@@ -48,15 +48,13 @@
             this.textServerName.Name = "textServerName";
             this.textServerName.Size = new System.Drawing.Size(508, 82);
             this.textServerName.TabIndex = 0;
-            this.textServerName.Text = "Server name";
+            this.textServerName.Text = "orange";
             // 
             // textPort
             // 
-            this.textPort.Enabled = false;
             this.textPort.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.textPort.Location = new System.Drawing.Point(639, 21);
             this.textPort.Name = "textPort";
-            this.textPort.ReadOnly = true;
             this.textPort.Size = new System.Drawing.Size(452, 82);
             this.textPort.TabIndex = 0;
             this.textPort.Text = "1234";

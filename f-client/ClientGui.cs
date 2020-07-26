@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -73,16 +74,32 @@ namespace f_client
             return server;
         }
 
+        private async Task<ITcpOp> startIo()
+        {
+            var serverName = textServerName.Text;
+            var port = int.Parse(textPort.Text);
+
+            var client = new TcpClient();
+
+            await client.ConnectAsync(serverName, port);
+
+            var tcp = TcpOp.New(client.GetStream());
+
+            return tcp;
+        }
+
         private async void buttonList_Click(object sender, EventArgs e)
         {
             var request = new SrvListRequest();
 
             var server = getServer();
+            var tcp = await startIo();
 
             await doIt(async () => {
                 log("List is clicked");
                 await Task.Delay(1000);
-                var list = await server.ListFiles(request);
+                var list = await server.ListFiles(request, tcp);
+                log(list.ToJson());
             });
         }
 

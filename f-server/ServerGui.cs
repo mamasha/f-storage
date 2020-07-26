@@ -26,6 +26,9 @@ namespace f_server
             var server = new FServer(config);
             var acceptor = TcpAcceptor.New(server);
 
+            textPort.Text = acceptor.Port.ToString();
+            textServerName.Text = acceptor.ServerName;
+
             _acceptor = acceptor;
             _users = server;
         }

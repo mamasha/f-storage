@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace f_core
@@ -14,68 +15,62 @@ namespace f_core
         private FClient(string serverName, int port)
         { }
 
-        private ITcpOp startOp(SrvRequest request)
+        private async Task<ITcpOp> startOp(SrvRequest request)
         {
-            var op = TcpOp.New(null);
+            var tcp = new TcpClient();
+            await tcp.ConnectAsync(request.ServerName, request.Port);
+            var op = TcpOp.New(tcp.GetStream());
             return op;
         }
 
-        async Task<SrvListResponse> IStorage.ListFiles(SrvListRequest request)
+        async Task<SrvListResponse> IStorage.ListFiles(SrvListRequest request, ITcpOp tcp)
         {
-            var op = startOp(request);
-
             var jRequest = request.ToJson();
-            await op.WriteString(jRequest);
+            await tcp.WriteString(jRequest);
 
-            var jResponse = await op.ReadString();
+            var jResponse = await tcp.ReadString();
             var response = jResponse.Parse<SrvListResponse>();
 
             return response;
         }
 
-        async Task<SrvUploadResponse> IStorage.Upload(SrvUploadRequest request)
+        async Task<SrvUploadResponse> IStorage.Upload(SrvUploadRequest request, ITcpOp tcp)
         {
             var file = File.Open(request.SrcPath, FileMode.Open);
             request.FileSize = file.Length;
 
-            var op = startOp(request);
-
             var jRequest = request.ToJson();
-            await op.WriteString(jRequest);
+            await tcp.WriteString(jRequest);
 
-            await op.WriteBytesFrom(file, file.Length);
+            await tcp.WriteBytesFrom(file, file.Length);
 
-            var jResponse = await op.ReadString();
+            var jResponse = await tcp.ReadString();
             var response = jResponse.Parse<SrvUploadResponse>();
 
             return response;
         }
 
-        async Task<SrvDownloadResponse> IStorage.Download(SrvDownloadRequest request, string fileName, string dstFolder)
+        async Task<SrvDownloadResponse> IStorage.Download(SrvDownloadRequest request, ITcpOp tcp)
         {
             var file = File.Open(request.LocalPath, FileMode.Create);
 
-            var op = startOp(request);
-
             var jRequest = request.ToJson();
-            await op.WriteString(jRequest);
+            await tcp.WriteString(jRequest);
 
-            var jResponse = await op.ReadString();
+            var jResponse = await tcp.ReadString();
             var response = jResponse.Parse<SrvDownloadResponse>();
 
-            await op.ReadBytesTo(file, response.FileSize);
+            await tcp.ReadBytesTo(file, response.FileSize);
 
             return response;
         }
 
-        async Task<SrvDeleteResponse> IStorage.Delete(SrvDeleteRequest request, string fileName)
+        async Task<SrvDeleteResponse> IStorage.Delete(SrvDeleteRequest request, ITcpOp tcp)
         {
-            var op = startOp(request);
-
             var jRequest = request.ToJson();
-            await op.WriteString(jRequest);
+            await tcp.WriteString(jRequest);
 
-            var jResponse = await op.ReadString();
+            var jResponse = await tcp.ReadString();
             var response = jResponse.Parse<SrvDeleteResponse>();
 
             return response;
