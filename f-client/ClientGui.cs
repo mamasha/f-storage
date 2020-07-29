@@ -1,12 +1,5 @@
 ﻿using f_core;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,6 +10,10 @@ namespace f_client
         public ClientForm()
         {
             InitializeComponent();
+
+            var config = FConfig.LoadFrom("f-config.json");
+
+            textPort.Text = config.TcpPort.ToString();
         }
 
         private void lockButtons()
@@ -47,13 +44,26 @@ namespace f_client
             richTextResult.AppendText("\r\n");
         }
 
-        private async Task doIt(Func<Task> action)
+        private async Task<IClient> getClient()
+        {
+            var serverName = textServerName.Text;
+            var port = int.Parse(textPort.Text);
+            var userName = textUserName.Text;
+            var password = textPassword.Text.AsSha();
+
+            var client = await FClient.New(serverName, port, userName, password);
+
+            return client;
+        }
+
+        private async Task invoke(Func<IClient, Task> makeRequest)
         {
             lockButtons();
 
             try
             {
-                await action();
+                using (var client = await getClient())
+                    await makeRequest(client);
             }
             catch (Exception ex)
             {
@@ -65,67 +75,46 @@ namespace f_client
             }
         }
 
-        private IStorage getServer()
-        {
-            var serverName = textServerName.Text;
-            var port = int.Parse(textPort.Text);
-            var server = FClient.New(serverName, port);
-
-            return server;
-        }
-
-        private async Task<ITcpOp> startIo()
-        {
-            var serverName = textServerName.Text;
-            var port = int.Parse(textPort.Text);
-
-            var client = new TcpClient();
-
-            await client.ConnectAsync(serverName, port);
-
-            var tcp = TcpOp.New(client.GetStream());
-
-            return tcp;
-        }
-
         private async void buttonList_Click(object sender, EventArgs e)
         {
-            var request = new SrvListRequest();
-
-            var server = getServer();
-            var tcp = await startIo();
-
-            await doIt(async () => {
-                log("List is clicked");
-                await Task.Delay(1000);
-                var list = await server.ListFiles(request, tcp);
+            await invoke(async client => {
+                var list = await client.ListFiles();
                 log(list.ToJson());
             });
         }
 
         private async void buttonUpload_Click(object sender, EventArgs e)
         {
-            await doIt(async () => {
-                log("Upload is clicked");
-                await Task.Delay(5000);
-            });
+            var fileName = textRemoteFileName.Text;
+            var srcPath = textLocalPath.Text;
+
+            await invoke(client =>
+                client.Upload(fileName, srcPath)
+            );
         }
 
         private async void buttonDownload_Click(object sender, EventArgs e)
         {
-            await doIt(async () => {
-                log("Download is clicked");
-                await Task.Delay(2000);
-            });
+            var fileName = textRemoteFileName.Text;
+            var dstPath = textLocalPath.Text;
+
+            await invoke(client =>
+                client.Download(fileName, dstPath)
+            );
         }
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
-            await doIt(async () => {
-                log("Delete is clicked");
-                await Task.Delay(3000);
-                throw new ApplicationException("User has no access");
-            });
+            var fileName = textRemoteFileName.Text;
+
+            await invoke(client =>
+                client.Delete(fileName)
+            );
+        }
+
+        private void ClientForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

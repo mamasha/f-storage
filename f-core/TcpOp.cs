@@ -1,17 +1,20 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace f_core
 {
-    public interface ITcpOp
+    interface ITcpOp
     {
         Task<string> ReadString();
         Task WriteString(string str);
+        Task<T> Read<T>() where T : class;
+        Task Write<T>(T data) where T : class;
         Task ReadBytesTo(Stream dst, long count);
         Task WriteBytesFrom(Stream src, long count);
     }
 
-    public class TcpOp : ITcpOp
+    class TcpOp : ITcpOp
     {
         private readonly Stream _tcp;
         private readonly StreamReader _reader;
@@ -32,7 +35,30 @@ namespace f_core
         async Task<string> ITcpOp.ReadString()
         {
             var str = await _reader.ReadLineAsync();
+
+            if (str == null)
+                throw new ApplicationException("Protocol error: null string");
+
             return str;
+        }
+
+        async Task<T> ITcpOp.Read<T>()
+        {
+            var json = await _reader.ReadLineAsync();
+
+            if (json == null)
+                throw new ApplicationException("Protocol error: null json");
+
+            return
+                json.Parse<T>();
+        }
+
+        async Task ITcpOp.Write<T>(T data)
+        {
+            var json = data.ToJson();
+
+            await _writer.WriteLineAsync(json);
+            await _writer.FlushAsync();
         }
 
         async Task ITcpOp.WriteString(string str)
@@ -43,7 +69,19 @@ namespace f_core
 
         async Task ITcpOp.ReadBytesTo(Stream dst, long count)
         {
-            await dst.CopyToAsync(_tcp);
+            const int bufSize = 81920;
+
+            var buf = new byte[bufSize];
+
+            while (count > 0)
+            {
+                int chunk = (int) Math.Min(count, bufSize);
+
+                await _tcp.ReadAsync(buf, 0, chunk);
+                await dst.WriteAsync(buf, 0, chunk);
+
+                count -= chunk;
+            }
         }
 
         async Task ITcpOp.WriteBytesFrom(Stream src, long count)

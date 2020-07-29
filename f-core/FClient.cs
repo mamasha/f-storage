@@ -1,79 +1,155 @@
-﻿using System.Data;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace f_core
 {
-    public class FClient : IStorage
+    public interface IClient : IDisposable
     {
-        public static IStorage New(string serverName, int port)
+        Task<string[]> ListFiles();
+        Task Upload(string fileName, string srcPath);
+        Task Download(string fileName, string dstPath);
+        Task Delete(string fileName);
+    }
+
+    public class FClient : IClient
+    {
+        private readonly string _serverName;
+        private readonly int _port;
+        private readonly string _userName;
+        private readonly string _password;
+
+        private readonly TcpClient _tcpClient;
+
+        public static async Task<IClient> New(string serverName, int port, string userName, string password)
         {
-            return new FClient(serverName, port);
+            var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync(serverName, port);
+
+            return new FClient(serverName, port, userName, password, tcpClient);
         }
 
-        private FClient(string serverName, int port)
-        { }
-
-        private async Task<ITcpOp> startOp(SrvRequest request)
+        private FClient(string serverName, int port, string userName, string password, TcpClient tcpClient)
         {
-            var tcp = new TcpClient();
-            await tcp.ConnectAsync(request.ServerName, request.Port);
-            var op = TcpOp.New(tcp.GetStream());
-            return op;
+            _serverName = serverName;
+            _port = port;
+            _userName = userName;
+            _password = password;
+            _tcpClient = tcpClient;
         }
 
-        async Task<SrvListResponse> IStorage.ListFiles(SrvListRequest request, ITcpOp tcp)
+        private ITcpOp startTcpOp(SrvRequest request)
         {
+            request.TrackingId = Helpers.MakeTrackingId();
+            request.ServerName = _serverName;
+            request.Port = _port;
+            request.UserName = _userName;
+            request.Password = _password;
+
+            return
+                TcpOp.New(_tcpClient.GetStream());
+        }
+
+        private void validate(SrvResponse response)
+        {
+            if (response == null)
+                throw new ApplicationException("Protocol error: no response is received");
+
+            if (response.Error.IsNotEmpty())
+                throw new ApplicationException(response.Error);
+        }
+
+        void IDisposable.Dispose()
+        { 
+            try
+            {
+                _tcpClient.Close();
+            }
+            catch (Exception)
+            { }
+        }
+
+        async Task<string[]> IClient.ListFiles()
+        {
+            var request = new SrvListRequest();
+
+            var tcpOp = startTcpOp(request);
+
             var jRequest = request.ToJson();
-            await tcp.WriteString(jRequest);
+            await tcpOp.WriteString(jRequest);
 
-            var jResponse = await tcp.ReadString();
+            var jResponse = await tcpOp.ReadString();
             var response = jResponse.Parse<SrvListResponse>();
 
-            return response;
+            validate(response);
+
+            return response.FileNames;
         }
 
-        async Task<SrvUploadResponse> IStorage.Upload(SrvUploadRequest request, ITcpOp tcp)
+        async Task IClient.Upload(string fileName, string srcPath)
         {
-            var file = File.Open(request.SrcPath, FileMode.Open);
-            request.FileSize = file.Length;
+            var file = File.Open(srcPath, FileMode.Open, FileAccess.Read);
+
+            var request = new SrvUploadRequest {
+                FileName = fileName,
+                FileSize = file.Length
+            };
+
+            var tcpOp = startTcpOp(request);
 
             var jRequest = request.ToJson();
-            await tcp.WriteString(jRequest);
+            await tcpOp.WriteString(jRequest);
 
-            await tcp.WriteBytesFrom(file, file.Length);
+            await tcpOp.WriteBytesFrom(file, file.Length);
 
-            var jResponse = await tcp.ReadString();
+            file.Close();
+
+            var jResponse = await tcpOp.ReadString();
             var response = jResponse.Parse<SrvUploadResponse>();
 
-            return response;
+            validate(response);
         }
 
-        async Task<SrvDownloadResponse> IStorage.Download(SrvDownloadRequest request, ITcpOp tcp)
+        async Task IClient.Download(string fileName, string dstPath)
         {
-            var file = File.Open(request.LocalPath, FileMode.Create);
+            var request = new SrvDownloadRequest { 
+                FileName = fileName,
+                LocalPath = dstPath
+            };
+
+            var tcpOp = startTcpOp(request);
 
             var jRequest = request.ToJson();
-            await tcp.WriteString(jRequest);
+            await tcpOp.WriteString(jRequest);
 
-            var jResponse = await tcp.ReadString();
+            var jResponse = await tcpOp.ReadString();
             var response = jResponse.Parse<SrvDownloadResponse>();
 
-            await tcp.ReadBytesTo(file, response.FileSize);
+            validate(response);
 
-            return response;
+            var file = File.Open(dstPath, FileMode.Create);
+
+            await tcpOp.ReadBytesTo(file, response.FileSize);
+
+            file.Close();
         }
 
-        async Task<SrvDeleteResponse> IStorage.Delete(SrvDeleteRequest request, ITcpOp tcp)
+        async Task IClient.Delete(string fileName)
         {
-            var jRequest = request.ToJson();
-            await tcp.WriteString(jRequest);
+            var request = new SrvDeleteRequest { 
+                FileName = fileName
+            };
 
-            var jResponse = await tcp.ReadString();
+            var tcpOp = startTcpOp(request);
+
+            var jRequest = request.ToJson();
+            await tcpOp.WriteString(jRequest);
+
+            var jResponse = await tcpOp.ReadString();
             var response = jResponse.Parse<SrvDeleteResponse>();
 
-            return response;
+            validate(response);
         }
     }
 }

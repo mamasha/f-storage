@@ -11,9 +11,9 @@ namespace f_core
 
     public interface IUserManagement
     {
-        Task<UserInfo[]> List();
-        Task Create(UserInfo request);
-        Task Update(UserInfo request);
-        Task Delete(UserInfo request);
+        Task<string[]> List();
+        Task Create(UserInfo user);
+        Task Update(UserInfo user);
+        Task Delete(UserInfo user);
     }
 }

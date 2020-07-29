@@ -1,4 +1,5 @@
-﻿using f_core;
+﻿using Accessibility;
+using f_core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,24 +15,37 @@ namespace f_server
 {
     public partial class ServerGui : Form
     {
-        private readonly ITcpAcceptor _acceptor;
+        private readonly ILogger _log;
+        private readonly FServer _server;
         private readonly IUserManagement _users;
 
         public ServerGui()
         {
             InitializeComponent();
+            this.FormClosed += formIsClosed;
 
-            var config = File.ReadAllText("f-config.json").Parse<FConfig>();
+            var config = FConfig.LoadFrom("f-config.json");
 
-            var server = new FServer(config);
-            var acceptor = TcpAcceptor.New(server);
+            var log = Logger.New(config);
 
-            textPort.Text = acceptor.Port.ToString();
-            textServerName.Text = acceptor.ServerName;
+            log.Info("fserver.gui", config);
 
-            _acceptor = acceptor;
+            var server = new FServer(config, log);
+
+            textPort.Text = server.Port.ToString();
+            textServerName.Text = server.ServerName;
+
+            _log = log;
+            _server = server;
             _users = server;
         }
+
+        private void formIsClosed(object sender, EventArgs e)
+        {
+            _log.Info("server.gui", "f-server is closed");
+            _server.Close();
+        }
+
         private void lockButtons()
         {
             textUserName.Enabled = false;
@@ -60,7 +74,7 @@ namespace f_server
             richTextResult.AppendText("\r\n");
         }
 
-        private async Task doIt(Func<Task> action)
+        private async Task invoke(Func<Task> action)
         {
             lockButtons();
 
@@ -93,10 +107,8 @@ namespace f_server
 
         private async void buttonList_Click(object sender, EventArgs e)
         {
-            await doIt(async () => {
-                log("List is clicked");
-                await Task.Delay(1000);
-                var list = _users.List();
+            await invoke(async () => {
+                var list = await _users.List();
                 log(list.ToJson());
             });
         }
@@ -105,9 +117,7 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await doIt(async () => {
-                log("Create is clicked");
-                await Task.Delay(1000);
+            await invoke(async () => {
                 await _users.Create(userInfo);
             });
         }
@@ -116,9 +126,7 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await doIt(async () => {
-                log("Update is clicked");
-                await Task.Delay(1000);
+            await invoke(async () => {
                 await _users.Update(userInfo);
             });
         }
@@ -127,12 +135,14 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await doIt(async () => {
-                log("Delete is clicked");
-                await Task.Delay(1000);
+            await invoke(async () => {
                 await _users.Delete(userInfo);
-                throw new ApplicationException("User is not found");
             });
+        }
+
+        private void ServerGui_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -1,97 +1,206 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace f_core
 {
-    public class FConfig
+    interface IServer
     {
-        public string RootStorageFolder { get; set; }
+        Task ListFiles(SrvListRequest request, ITcpOp tcpOp);
+        Task UploadFile(SrvUploadRequest request, ITcpOp tcpOp);
+        Task DownloadFile(SrvDownloadRequest request, ITcpOp tcpOp);
+        Task DeleteFile(SrvDeleteRequest request, ITcpOp tcpOp);
     }
 
-    public interface IServer : IUserManagement
+    public class FServer : IDisposable, IServer, IUserManagement
     {
-        Task ProcessRequest(ITcpOp tcp);
-    }
+        private readonly FConfig _config;
+        private readonly ILogger _log;
+        private readonly IUsersDal _users;
+        private readonly ITcpAcceptor _tcpAcceptor;
 
-    public class FServer : IServer
-    {
-        public FServer(FConfig config)
+        public FServer(FConfig config, ILogger log, IUsersDal usersDal = null)
+        {
+            var tcpAcceptor = TcpAcceptor.New(config, log, this);
+            var users = usersDal ?? UsersDal.New(config);
+
+            _config = config;
+            _log = log;
+            _tcpAcceptor = tcpAcceptor;
+            _users = users;
+        }
+
+        private TSrvResponse makeResponse<TSrvResponse>(SrvRequest request)
+            where TSrvResponse : SrvResponse, new()
+        {
+            return new TSrvResponse {
+                TrackingId = request.TrackingId
+            };
+        }
+
+        private void validate(SrvRequest request)
         { }
 
-        private async Task listFiles(SrvListRequest request, ITcpOp tcp)
+        private async Task<UserInfo> getUser(SrvRequest request)
         {
-            var response = new SrvListResponse {
-                RequestId = request.RequestId,
-                FileNames = new string[] {"foo.txt", "boo.txt"}
-            };
-
-            await tcp.WriteString(response.ToJson());
+            var user = await _users.Get(request.UserName);
+            return user;
         }
 
-        private async Task uploadFile(SrvUploadRequest request, ITcpOp tcp)
+        private void authenticate(UserInfo user, SrvRequest request)
         {
-            var response = new SrvUploadResponse {
-                RequestId = request.RequestId
-            };
-
-            await tcp.WriteString(response.ToJson());
+            if (user.Password != request.Password)
+                throw new ApplicationException($"User '{request.UserName}' or its password are invalid");
         }
 
-        private async Task downloadFile(SrvDownloadRequest request, ITcpOp tcp)
+        private string makeFilePath(UserInfo user, string fileName)
         {
-            var response = new SrvDownloadResponse {
-                RequestId = request.RequestId
-            };
+            fileName = Path.GetFileName(fileName);      // remove any path in name
+            var path = Path.Combine(user.Folder, fileName);
 
-            await tcp.WriteString(response.ToJson());
+            return path;
         }
 
-        private async Task deleteFile(SrvDeleteRequest request, ITcpOp tcp)
+        void IDisposable.Dispose()
         {
-            var response = new SrvDeleteResponse {
-                RequestId = request.RequestId
-            };
-
-            await tcp.WriteString(response.ToJson());
+            _users.Close();
+            _log.Stop();
         }
 
-        async Task IServer.ProcessRequest(ITcpOp tcp)
+        async Task IServer.ListFiles(SrvListRequest request, ITcpOp tcpOp)
         {
-            var jRequest = await tcp.ReadString();
-            var request = jRequest.Parse<SrvRequest>();
+            validate(request);
 
-            switch (request.Command)
-            {
-                case SrvRequest.LIST:
-                    await listFiles(jRequest.Parse<SrvListRequest>(), tcp);
-                    break;
+            var user = await getUser(request);
+            authenticate(user, request);
 
-                case SrvRequest.UPLOAD:
-                    await uploadFile(jRequest.Parse<SrvUploadRequest>(), tcp);
-                    break;
+            var fileList = Directory.GetFiles(user.Folder);
 
-                case SrvRequest.DOWNLOAD:
-                    await downloadFile(jRequest.Parse<SrvDownloadRequest>(), tcp);
-                    break;
+            var response = makeResponse<SrvListResponse>(request);
 
-                case SrvRequest.DELETE:
-                    await deleteFile(jRequest.Parse<SrvDeleteRequest>(), tcp);
-                    break;
-            }
+            response.FileNames = fileList;
+
+            await tcpOp.Write(response);
+
+            _log.Info(request.TrackingId, new { request, response });
         }
 
-        async Task<UserInfo[]> IUserManagement.List()
+        async Task IServer.UploadFile(SrvUploadRequest request, ITcpOp tcpOp)
         {
-            var list = new UserInfo[0];
+            validate(request);
+
+            var user = await getUser(request);
+            authenticate(user, request);
+
+            var dstPath = makeFilePath(user, request.FileName);
+            Directory.CreateDirectory(user.Folder);
+
+            var file = File.Open(dstPath, FileMode.Create);
+
+            await tcpOp.ReadBytesTo(file, request.FileSize);
+
+            file.Close();
+
+            var response = makeResponse<SrvUploadResponse>(request);
+
+            await tcpOp.Write(response);
+
+            _log.Info(request.TrackingId, new { request, response });
+        }
+
+        async Task IServer.DownloadFile(SrvDownloadRequest request, ITcpOp tcpOp)
+        {
+            validate(request);
+
+            var user = await getUser(request);
+            authenticate(user, request);
+
+            var srcPath = makeFilePath(user, request.FileName);
+
+            if (!File.Exists(srcPath))
+                throw new ApplicationException($"Can't find '{request.FileName}'");
+
+            var file = File.Open(srcPath, FileMode.Open, FileAccess.Read);
+
+            var response = makeResponse<SrvDownloadResponse>(request);
+            response.FileSize = file.Length;
+
+            await tcpOp.Write(response);
+
+            await tcpOp.WriteBytesFrom(file, file.Length);
+
+            file.Close();
+
+            _log.Info(request.TrackingId, new { request, response });
+        }
+
+        async Task IServer.DeleteFile(SrvDeleteRequest request, ITcpOp tcpOp)
+        {
+            validate(request);
+
+            var user = await getUser(request);
+            authenticate(user, request);
+
+            var path = makeFilePath(user, request.FileName);
+
+            File.Delete(path);
+
+            var response = makeResponse<SrvDeleteResponse>(request);
+
+            await tcpOp.Write(response);
+
+            _log.Info(request.TrackingId, new { request, response });
+        }
+
+        async Task<string[]> IUserManagement.List()
+        {
+            var queue =
+                from user in await _users.List()
+                select $"{user.UserName} '{user.Folder}'";
+
+            var list = queue.ToArray();
+
+            _log.Info("fserver.gui", new { list.Length });
+
             return list;
         }
 
-        async Task IUserManagement.Create(UserInfo request)
-        { }
+        async Task IUserManagement.Create(UserInfo user)
+        {
+            await _users.Create(user);
 
-        async Task IUserManagement.Update(UserInfo request)
-        { }
+            _log.Info("fserver.gui", user);
+        }
 
-        async Task IUserManagement.Delete(UserInfo request)
-        { }
+        async Task IUserManagement.Update(UserInfo user)
+        {
+            _log.Info("fserver.gui", user);
+        }
+
+        async Task IUserManagement.Delete(UserInfo user)
+        {
+            _log.Info("fserver.gui", user);
+        }
+
+        public string ServerName { get { return _tcpAcceptor.ServerName; } }
+        public int Port { get { return _tcpAcceptor.Port; } }
+
+        public void Close()
+        {
+            try
+            {
+                _users.Close();
+                _tcpAcceptor.Close();
+
+                Thread.Sleep(_config.Server.DelayBeforeClose);
+
+                _log.Stop();
+            }
+            catch (Exception)
+            { }
+        }
     }
 }

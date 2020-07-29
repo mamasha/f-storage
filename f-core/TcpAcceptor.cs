@@ -5,27 +5,35 @@ using System.Threading.Tasks;
 
 namespace f_core
 {
-    public interface ITcpAcceptor
+    interface ITcpAcceptor
     {
         string ServerName { get; }
         int Port { get; }
+
+        void Close();
     }
 
-    public class TcpAcceptor : ITcpAcceptor
+    class TcpAcceptor : ITcpAcceptor
     {
+        private readonly int FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = 2000;
+
+        private readonly ILogger _log;
         private readonly IServer _server;
         private readonly TcpListener _listener;
 
-        public static ITcpAcceptor New(IServer server)
+        public static ITcpAcceptor New(FConfig config, ILogger log, IServer server)
         {
-            return new TcpAcceptor(server);
+            return new TcpAcceptor(config, log, server);
         }
 
-        private TcpAcceptor(IServer server)
+        private TcpAcceptor(FConfig config, ILogger log, IServer server)
         {
-            var listener = new TcpListener(IPAddress.Any, 0);
+            FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT;
+
+            var listener = new TcpListener(IPAddress.Any, config.TcpPort);
             listener.Start();
 
+            _log = log;
             _server = server;
             _listener = listener;
 
@@ -36,23 +44,78 @@ namespace f_core
         {
             for (;;)
             {
-                var tcp = await _listener.AcceptTcpClientAsync();
-                _ = Task.Run(() => processRequest(tcp));
+                try
+                {
+                    var tcpClient = await _listener.AcceptTcpClientAsync();
+                    _ = Task.Run(() => processConnection(tcpClient));
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("tcp.protocol", ex);
+                    await Task.Delay(FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT);
+                }
             }
         }
 
-        private async Task processRequest(TcpClient tcp)
+        private async Task dispathRequest(SrvRequest request, string jRequest, ITcpOp tcpOp)
         {
             try
             {
-                var op = TcpOp.New(tcp.GetStream());
-                await _server.ProcessRequest(op);
+                switch (request.Command)
+                {
+                    case SrvRequest.LIST:
+                        await _server.ListFiles(jRequest.Parse<SrvListRequest>(), tcpOp);
+                        break;
+
+                    case SrvRequest.UPLOAD:
+                        await _server.UploadFile(jRequest.Parse<SrvUploadRequest>(), tcpOp);
+                        break;
+
+                    case SrvRequest.DOWNLOAD:
+                        await _server.DownloadFile(jRequest.Parse<SrvDownloadRequest>(), tcpOp);
+                        break;
+
+                    case SrvRequest.DELETE:
+                        await _server.DeleteFile(jRequest.Parse<SrvDeleteRequest>(), tcpOp);
+                        break;
+                }
             }
             catch (Exception ex)
-            { }
+            {
+                _log.Error(request.TrackingId, ex);
+
+                await tcpOp.Write(new SrvResponse {
+                    TrackingId = request.TrackingId,
+                    Error = ex.Message
+                });
+            }
+        }
+
+        private async Task processConnection(TcpClient tcpClient)
+        {
+            try
+            {
+                for (;;)
+                {
+                    var tcpOp = TcpOp.New(tcpClient.GetStream());
+
+                    var jRequest = await tcpOp.ReadString();
+                    var request = jRequest.Parse<SrvRequest>();
+
+                    await dispathRequest(request, jRequest, tcpOp);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error("tcp.protocol", ex);
+            }
             finally
             {
-                tcp.Close();
+                try
+                {
+                    tcpClient.Close();
+                }
+                catch { }
             }
         }
 
@@ -68,6 +131,16 @@ namespace f_core
                 var epoint = (IPEndPoint) _listener.LocalEndpoint;
                 return epoint.Port;
             }
+        }
+
+        void ITcpAcceptor.Close()
+        {
+            try
+            {
+                _listener.Stop();
+            }
+            catch (Exception)
+            { }
         }
     }
 }
