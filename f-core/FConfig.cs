@@ -13,7 +13,7 @@ namespace f_core
         public class ServerSide
         {
             public string RootStorageFolder { get; set; } = ".";
-            public string LogFileName { get; set; } = "f-server.x.log";
+            public string LogFileName { get; set; } = "f-server.log";
             public int DelayBeforeClose { get; set; } = 1000;
 
             public int FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT { get; set; } = 2000;

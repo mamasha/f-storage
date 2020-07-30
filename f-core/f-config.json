@@ -1,11 +1,11 @@
 {
   "TcpPort": 1235,
 
-  "ServerSide": {
+  "Server": {
     "RootStorageFolder": ".",
     "LogFileName": "f-server.log"
   },
 
-  "ClientSide": {
+  "Client": {
   }
 }

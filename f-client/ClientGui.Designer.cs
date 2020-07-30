@@ -54,7 +54,6 @@
             this.textServerName.Name = "textServerName";
             this.textServerName.Size = new System.Drawing.Size(508, 82);
             this.textServerName.TabIndex = 0;
-            this.textServerName.Text = "orange";
             // 
             // textPort
             // 
@@ -63,7 +62,6 @@
             this.textPort.Name = "textPort";
             this.textPort.Size = new System.Drawing.Size(452, 82);
             this.textPort.TabIndex = 0;
-            this.textPort.Text = "1234";
             // 
             // textLocalPath
             // 
@@ -72,7 +70,7 @@
             this.textLocalPath.Name = "textLocalPath";
             this.textLocalPath.Size = new System.Drawing.Size(1068, 82);
             this.textLocalPath.TabIndex = 0;
-            this.textLocalPath.Text = "Local path";
+            this.textLocalPath.Text = "e_sqlite3.dll";
             // 
             // textRemoteFileName
             // 
@@ -81,7 +79,7 @@
             this.textRemoteFileName.Name = "textRemoteFileName";
             this.textRemoteFileName.Size = new System.Drawing.Size(1068, 82);
             this.textRemoteFileName.TabIndex = 0;
-            this.textRemoteFileName.Text = "Remote file name";
+            this.textRemoteFileName.Text = "e_sqlite3.copy.dll";
             // 
             // buttonList
             // 

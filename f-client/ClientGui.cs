@@ -13,6 +13,7 @@ namespace f_client
 
             var config = FConfig.LoadFrom("f-config.json");
 
+            textServerName.Text = Environment.MachineName;
             textPort.Text = config.TcpPort.ToString();
         }
 

@@ -96,7 +96,7 @@
             this.textFolder.Name = "textFolder";
             this.textFolder.Size = new System.Drawing.Size(1068, 82);
             this.textFolder.TabIndex = 0;
-            this.textFolder.Text = "Folder";
+            this.textFolder.Text = "goga-root";
             // 
             // textPassword
             // 
@@ -105,7 +105,7 @@
             this.textPassword.Name = "textPassword";
             this.textPassword.Size = new System.Drawing.Size(469, 82);
             this.textPassword.TabIndex = 0;
-            this.textPassword.Text = "Password";
+            this.textPassword.Text = "aabbcc";
             // 
             // textPort
             // 
@@ -116,7 +116,6 @@
             this.textPort.ReadOnly = true;
             this.textPort.Size = new System.Drawing.Size(469, 82);
             this.textPort.TabIndex = 0;
-            this.textPort.Text = "1234";
             // 
             // textUserName
             // 
@@ -125,7 +124,7 @@
             this.textUserName.Name = "textUserName";
             this.textUserName.Size = new System.Drawing.Size(522, 82);
             this.textUserName.TabIndex = 0;
-            this.textUserName.Text = "User name";
+            this.textUserName.Text = "goga";
             // 
             // richTextResult
             // 
@@ -145,7 +144,6 @@
             this.textServerName.ReadOnly = true;
             this.textServerName.Size = new System.Drawing.Size(522, 82);
             this.textServerName.TabIndex = 0;
-            this.textServerName.Text = "Server name";
             // 
             // label1
             // 
