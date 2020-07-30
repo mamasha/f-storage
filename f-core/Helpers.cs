@@ -53,7 +53,7 @@ namespace f_core
             var hash = new StringBuilder();
             byte[] crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(str));
 
-            foreach (byte theByte in crypto)
+            foreach (var theByte in crypto)
                 hash.Append(theByte.ToString("x2"));
 
             return hash.ToString();

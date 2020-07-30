@@ -28,7 +28,7 @@ namespace f_nunit
             var config = new FConfig() { TcpPort = 0 };
             var dummyUsers = new DummyUsers();
 
-            var fserver = new FServer(config, Logger.Null, dummyUsers);
+            var fserver = new FServer(Logger.Null, config, dummyUsers);
             IUserManagement users = fserver;
 
             await users.Create(_goga);
@@ -58,7 +58,7 @@ namespace f_nunit
         {
             var config = new FConfig() { TcpPort = 0 };
 
-            var fserver = new FServer(config, Logger.Null);
+            var fserver = new FServer(Logger.Null, config);
             IUserManagement users = fserver;
 
             await users.Create(_goga);

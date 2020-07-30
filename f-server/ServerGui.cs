@@ -30,7 +30,7 @@ namespace f_server
 
             log.Info("fserver.gui", config);
 
-            var server = new FServer(config, log);
+            var server = new FServer(log, config);
 
             textPort.Text = server.Port.ToString();
             textServerName.Text = server.ServerName;
@@ -68,7 +68,7 @@ namespace f_server
             buttonDelete.Enabled = true;
         }
 
-        private void log(string msg)
+        private void logToGui(string msg)
         {
             richTextResult.AppendText(msg);
             richTextResult.AppendText("\r\n");
@@ -84,7 +84,8 @@ namespace f_server
             }
             catch (Exception ex)
             {
-                log($"ERROR: {ex.Message}");
+                _log.Error("fserver.gui", ex);
+                logToGui($"ERROR: {ex.Message}");
             }
             finally
             {
@@ -109,7 +110,7 @@ namespace f_server
         {
             await invoke(async () => {
                 var list = await _users.List();
-                log(list.ToJson());
+                logToGui(list.ToJson());
             });
         }
 

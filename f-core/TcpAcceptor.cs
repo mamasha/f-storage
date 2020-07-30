@@ -28,7 +28,7 @@ namespace f_core
 
         private TcpAcceptor(FConfig config, ILogger log, IServer server)
         {
-            FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT;
+            FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.Server.FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT;
 
             var listener = new TcpListener(IPAddress.Any, config.TcpPort);
             listener.Start();
@@ -57,7 +57,7 @@ namespace f_core
             }
         }
 
-        private async Task dispathRequest(SrvRequest request, string jRequest, ITcpOp tcpOp)
+        private async Task<bool> dispathRequest(SrvRequest request, string jRequest, ITcpOp tcpOp)
         {
             try
             {
@@ -79,6 +79,8 @@ namespace f_core
                         await _server.DeleteFile(jRequest.Parse<SrvDeleteRequest>(), tcpOp);
                         break;
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -88,6 +90,8 @@ namespace f_core
                     TrackingId = request.TrackingId,
                     Error = ex.Message
                 });
+
+                return false;
             }
         }
 
@@ -102,7 +106,10 @@ namespace f_core
                     var jRequest = await tcpOp.ReadString();
                     var request = jRequest.Parse<SrvRequest>();
 
-                    await dispathRequest(request, jRequest, tcpOp);
+                    bool ok = await dispathRequest(request, jRequest, tcpOp);
+
+                    if (!ok)
+                        break;
                 }
             }
             catch (Exception ex)

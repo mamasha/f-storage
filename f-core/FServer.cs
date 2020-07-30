@@ -17,18 +17,18 @@ namespace f_core
 
     public class FServer : IDisposable, IServer, IUserManagement
     {
-        private readonly FConfig _config;
         private readonly ILogger _log;
+        private readonly FConfig _config;
         private readonly IUsersDal _users;
         private readonly ITcpAcceptor _tcpAcceptor;
 
-        public FServer(FConfig config, ILogger log, IUsersDal usersDal = null)
+        public FServer(ILogger log, FConfig config, IUsersDal usersDal = null)
         {
             var tcpAcceptor = TcpAcceptor.New(config, log, this);
-            var users = usersDal ?? UsersDal.New(config);
+            var users = usersDal ?? UsersDal.New(log, config);
 
-            _config = config;
             _log = log;
+            _config = config;
             _tcpAcceptor = tcpAcceptor;
             _users = users;
         }
@@ -52,8 +52,8 @@ namespace f_core
 
         private void authenticate(UserInfo user, SrvRequest request)
         {
-            if (user.Password != request.Password)
-                throw new ApplicationException($"User '{request.UserName}' or its password are invalid");
+            if (user == null || user.Password != request.Password)
+                throw new ApplicationException($"Wrong user '{request.UserName}' or password");
         }
 
         private string makeFilePath(UserInfo user, string fileName)
@@ -172,17 +172,21 @@ namespace f_core
         {
             await _users.Create(user);
 
-            _log.Info("fserver.gui", user);
+            _log.Info("fserver.gui", $"User '{user.UserName}' is created");
         }
 
         async Task IUserManagement.Update(UserInfo user)
         {
-            _log.Info("fserver.gui", user);
+            await _users.Update(user);
+
+            _log.Info("fserver.gui", $"User '{user.UserName}' is updated");
         }
 
         async Task IUserManagement.Delete(UserInfo user)
         {
-            _log.Info("fserver.gui", user);
+            await _users.Delete(user);
+
+            _log.Info("fserver.gui", $"User '{user.UserName}' is deleted");
         }
 
         public string ServerName { get { return _tcpAcceptor.ServerName; } }
