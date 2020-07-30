@@ -45,6 +45,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.buttonBrowse = new System.Windows.Forms.Button();
+            this.ofdLocalFile = new System.Windows.Forms.OpenFileDialog();
+            this.listFiles = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // textServerName
@@ -61,33 +64,34 @@
             this.textPort.Location = new System.Drawing.Point(639, 46);
             this.textPort.Name = "textPort";
             this.textPort.Size = new System.Drawing.Size(452, 82);
-            this.textPort.TabIndex = 0;
+            this.textPort.TabIndex = 1;
             // 
             // textLocalPath
             // 
-            this.textLocalPath.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.textLocalPath.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.textLocalPath.Location = new System.Drawing.Point(23, 315);
             this.textLocalPath.Name = "textLocalPath";
-            this.textLocalPath.Size = new System.Drawing.Size(1068, 82);
-            this.textLocalPath.TabIndex = 0;
-            this.textLocalPath.Text = "e_sqlite3.dll";
+            this.textLocalPath.Size = new System.Drawing.Size(983, 45);
+            this.textLocalPath.TabIndex = 5;
+            this.textLocalPath.Text = "Microsoft.EntityFrameworkCore.dll";
+            this.textLocalPath.TextChanged += new System.EventHandler(this.textLocalPath_TextChanged);
             // 
             // textRemoteFileName
             // 
             this.textRemoteFileName.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textRemoteFileName.Location = new System.Drawing.Point(23, 455);
+            this.textRemoteFileName.Location = new System.Drawing.Point(23, 415);
             this.textRemoteFileName.Name = "textRemoteFileName";
             this.textRemoteFileName.Size = new System.Drawing.Size(1068, 82);
-            this.textRemoteFileName.TabIndex = 0;
-            this.textRemoteFileName.Text = "e_sqlite3.copy.dll";
+            this.textRemoteFileName.TabIndex = 7;
+            this.textRemoteFileName.Text = "Microsoft.EntityFrameworkCore.dll";
             // 
             // buttonList
             // 
             this.buttonList.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonList.Location = new System.Drawing.Point(23, 576);
+            this.buttonList.Location = new System.Drawing.Point(23, 536);
             this.buttonList.Name = "buttonList";
             this.buttonList.Size = new System.Drawing.Size(227, 83);
-            this.buttonList.TabIndex = 1;
+            this.buttonList.TabIndex = 8;
             this.buttonList.Text = "List";
             this.buttonList.UseVisualStyleBackColor = true;
             this.buttonList.Click += new System.EventHandler(this.buttonList_Click);
@@ -95,10 +99,10 @@
             // buttonUpload
             // 
             this.buttonUpload.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonUpload.Location = new System.Drawing.Point(275, 576);
+            this.buttonUpload.Location = new System.Drawing.Point(275, 536);
             this.buttonUpload.Name = "buttonUpload";
-            this.buttonUpload.Size = new System.Drawing.Size(227, 83);
-            this.buttonUpload.TabIndex = 1;
+            this.buttonUpload.Size = new System.Drawing.Size(241, 83);
+            this.buttonUpload.TabIndex = 9;
             this.buttonUpload.Text = "Upload";
             this.buttonUpload.UseVisualStyleBackColor = true;
             this.buttonUpload.Click += new System.EventHandler(this.buttonUpload_Click);
@@ -106,10 +110,10 @@
             // buttonDownload
             // 
             this.buttonDownload.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonDownload.Location = new System.Drawing.Point(544, 576);
+            this.buttonDownload.Location = new System.Drawing.Point(544, 536);
             this.buttonDownload.Name = "buttonDownload";
             this.buttonDownload.Size = new System.Drawing.Size(292, 83);
-            this.buttonDownload.TabIndex = 1;
+            this.buttonDownload.TabIndex = 10;
             this.buttonDownload.Text = "Download";
             this.buttonDownload.UseVisualStyleBackColor = true;
             this.buttonDownload.Click += new System.EventHandler(this.buttonDownload_Click);
@@ -117,21 +121,22 @@
             // buttonDelete
             // 
             this.buttonDelete.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.buttonDelete.Location = new System.Drawing.Point(864, 576);
+            this.buttonDelete.Location = new System.Drawing.Point(864, 536);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(227, 83);
-            this.buttonDelete.TabIndex = 1;
+            this.buttonDelete.TabIndex = 11;
             this.buttonDelete.Text = "Delete";
             this.buttonDelete.UseVisualStyleBackColor = true;
             this.buttonDelete.Click += new System.EventHandler(this.buttonDelete_Click);
             // 
             // richTextResult
             // 
-            this.richTextResult.Location = new System.Drawing.Point(23, 695);
+            this.richTextResult.Location = new System.Drawing.Point(417, 655);
             this.richTextResult.Name = "richTextResult";
             this.richTextResult.ReadOnly = true;
-            this.richTextResult.Size = new System.Drawing.Size(1068, 638);
+            this.richTextResult.Size = new System.Drawing.Size(674, 688);
             this.richTextResult.TabIndex = 2;
+            this.richTextResult.TabStop = false;
             this.richTextResult.Text = "";
             // 
             // textUserName
@@ -140,7 +145,7 @@
             this.textUserName.Location = new System.Drawing.Point(23, 176);
             this.textUserName.Name = "textUserName";
             this.textUserName.Size = new System.Drawing.Size(508, 82);
-            this.textUserName.TabIndex = 0;
+            this.textUserName.TabIndex = 3;
             this.textUserName.Text = "goga";
             // 
             // textPassword
@@ -149,7 +154,7 @@
             this.textPassword.Location = new System.Drawing.Point(639, 176);
             this.textPassword.Name = "textPassword";
             this.textPassword.Size = new System.Drawing.Size(452, 82);
-            this.textPassword.TabIndex = 0;
+            this.textPassword.TabIndex = 4;
             this.textPassword.Text = "aabbcc";
             // 
             // label1
@@ -200,17 +205,43 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(26, 422);
+            this.label6.Location = new System.Drawing.Point(26, 382);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(186, 30);
             this.label6.TabIndex = 3;
             this.label6.Text = "File name (remote)";
+            // 
+            // buttonBrowse
+            // 
+            this.buttonBrowse.Location = new System.Drawing.Point(1022, 315);
+            this.buttonBrowse.Name = "buttonBrowse";
+            this.buttonBrowse.Size = new System.Drawing.Size(52, 45);
+            this.buttonBrowse.TabIndex = 6;
+            this.buttonBrowse.Text = "...";
+            this.buttonBrowse.UseVisualStyleBackColor = true;
+            this.buttonBrowse.Click += new System.EventHandler(this.buttonBrowse_Click);
+            // 
+            // ofdLocalFile
+            // 
+            this.ofdLocalFile.FileName = "Local file";
+            // 
+            // listFiles
+            // 
+            this.listFiles.FormattingEnabled = true;
+            this.listFiles.ItemHeight = 30;
+            this.listFiles.Location = new System.Drawing.Point(26, 655);
+            this.listFiles.Name = "listFiles";
+            this.listFiles.Size = new System.Drawing.Size(378, 694);
+            this.listFiles.TabIndex = 12;
+            this.listFiles.SelectedIndexChanged += new System.EventHandler(this.listFiles_SelectedIndexChanged);
             // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1123, 1355);
+            this.Controls.Add(this.listFiles);
+            this.Controls.Add(this.buttonBrowse);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -230,7 +261,6 @@
             this.Controls.Add(this.textServerName);
             this.Name = "ClientForm";
             this.Text = "ClientGui";
-            this.Load += new System.EventHandler(this.ClientForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -255,6 +285,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button buttonBrowse;
+        private System.Windows.Forms.OpenFileDialog ofdLocalFile;
+        private System.Windows.Forms.ListBox listFiles;
     }
 }
 

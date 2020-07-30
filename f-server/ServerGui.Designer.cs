@@ -43,6 +43,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.listUsers = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // buttonDelete
@@ -51,7 +52,7 @@
             this.buttonDelete.Location = new System.Drawing.Point(854, 454);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(227, 83);
-            this.buttonDelete.TabIndex = 1;
+            this.buttonDelete.TabIndex = 6;
             this.buttonDelete.Text = "Delete";
             this.buttonDelete.UseVisualStyleBackColor = true;
             this.buttonDelete.Click += new System.EventHandler(this.buttonDelete_Click);
@@ -62,7 +63,7 @@
             this.buttonUpdate.Location = new System.Drawing.Point(534, 454);
             this.buttonUpdate.Name = "buttonUpdate";
             this.buttonUpdate.Size = new System.Drawing.Size(292, 83);
-            this.buttonUpdate.TabIndex = 1;
+            this.buttonUpdate.TabIndex = 5;
             this.buttonUpdate.Text = "Update";
             this.buttonUpdate.UseVisualStyleBackColor = true;
             this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
@@ -73,7 +74,7 @@
             this.buttonCreate.Location = new System.Drawing.Point(265, 454);
             this.buttonCreate.Name = "buttonCreate";
             this.buttonCreate.Size = new System.Drawing.Size(227, 83);
-            this.buttonCreate.TabIndex = 1;
+            this.buttonCreate.TabIndex = 4;
             this.buttonCreate.Text = "Create";
             this.buttonCreate.UseVisualStyleBackColor = true;
             this.buttonCreate.Click += new System.EventHandler(this.buttonCreate_Click);
@@ -84,7 +85,7 @@
             this.buttonList.Location = new System.Drawing.Point(13, 454);
             this.buttonList.Name = "buttonList";
             this.buttonList.Size = new System.Drawing.Size(227, 83);
-            this.buttonList.TabIndex = 1;
+            this.buttonList.TabIndex = 3;
             this.buttonList.Text = "List";
             this.buttonList.UseVisualStyleBackColor = true;
             this.buttonList.Click += new System.EventHandler(this.buttonList_Click);
@@ -95,7 +96,7 @@
             this.textFolder.Location = new System.Drawing.Point(16, 329);
             this.textFolder.Name = "textFolder";
             this.textFolder.Size = new System.Drawing.Size(1068, 82);
-            this.textFolder.TabIndex = 0;
+            this.textFolder.TabIndex = 2;
             this.textFolder.Text = "goga-root";
             // 
             // textPassword
@@ -104,7 +105,7 @@
             this.textPassword.Location = new System.Drawing.Point(611, 195);
             this.textPassword.Name = "textPassword";
             this.textPassword.Size = new System.Drawing.Size(469, 82);
-            this.textPassword.TabIndex = 0;
+            this.textPassword.TabIndex = 1;
             this.textPassword.Text = "aabbcc";
             // 
             // textPort
@@ -128,11 +129,12 @@
             // 
             // richTextResult
             // 
-            this.richTextResult.Location = new System.Drawing.Point(12, 573);
+            this.richTextResult.Location = new System.Drawing.Point(366, 573);
             this.richTextResult.Name = "richTextResult";
             this.richTextResult.ReadOnly = true;
-            this.richTextResult.Size = new System.Drawing.Size(1068, 725);
+            this.richTextResult.Size = new System.Drawing.Size(714, 725);
             this.richTextResult.TabIndex = 2;
+            this.richTextResult.TabStop = false;
             this.richTextResult.Text = "";
             // 
             // textServerName
@@ -190,11 +192,22 @@
             this.label5.TabIndex = 3;
             this.label5.Text = "User folder";
             // 
+            // listUsers
+            // 
+            this.listUsers.FormattingEnabled = true;
+            this.listUsers.ItemHeight = 30;
+            this.listUsers.Location = new System.Drawing.Point(16, 573);
+            this.listUsers.Name = "listUsers";
+            this.listUsers.Size = new System.Drawing.Size(325, 724);
+            this.listUsers.TabIndex = 7;
+            this.listUsers.SelectedIndexChanged += new System.EventHandler(this.listUsers_SelectedIndexChanged);
+            // 
             // ServerGui
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1105, 1328);
+            this.Controls.Add(this.listUsers);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -212,7 +225,6 @@
             this.Controls.Add(this.buttonDelete);
             this.Name = "ServerGui";
             this.Text = "ServerGui";
-            this.Load += new System.EventHandler(this.ServerGui_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -235,6 +247,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ListBox listUsers;
     }
 }
 

@@ -19,6 +19,8 @@ namespace f_server
         private readonly FServer _server;
         private readonly IUserManagement _users;
 
+        private readonly Control[] _controlsToLock;
+
         public ServerGui()
         {
             InitializeComponent();
@@ -38,6 +40,18 @@ namespace f_server
             _log = log;
             _server = server;
             _users = server;
+
+            _controlsToLock = new Control[] {
+                textPort,
+                textUserName,
+                textPassword,
+                textFolder,
+                buttonList,
+                buttonCreate,
+                buttonUpdate,
+                buttonDelete,
+                listUsers
+            };
         }
 
         private void formIsClosed(object sender, EventArgs e)
@@ -46,50 +60,45 @@ namespace f_server
             _server.Close();
         }
 
-        private void lockButtons()
+        private void lockControls()
         {
-            textUserName.Enabled = false;
-            textPassword.Enabled = false;
-            textFolder.Enabled = false;
-            buttonList.Enabled = false;
-            buttonCreate.Enabled = false;
-            buttonUpdate.Enabled = false;
-            buttonDelete.Enabled = false;
+            Array.ForEach(_controlsToLock,
+                control => control.Enabled = false);
         }
 
-        private void unlockButtons()
+        private void unlockControls()
         {
-            textUserName.Enabled = true;
-            textPassword.Enabled = true;
-            textFolder.Enabled = true;
-            buttonList.Enabled = true;
-            buttonCreate.Enabled = true;
-            buttonUpdate.Enabled = true;
-            buttonDelete.Enabled = true;
+            Array.ForEach(_controlsToLock,
+                control => control.Enabled = true);
         }
 
         private void logToGui(string msg)
         {
             richTextResult.AppendText(msg);
             richTextResult.AppendText("\r\n");
+
+            richTextResult.SelectionStart = richTextResult.Text.Length;
+            richTextResult.ScrollToCaret();
         }
 
-        private async Task invoke(Func<Task> action)
+        private async Task invoke(string opName, Func<Task> action)
         {
-            lockButtons();
+            lockControls();
 
             try
             {
                 await action();
+
+                logToGui($"{opName}: OK");
             }
             catch (Exception ex)
             {
                 _log.Error("fserver.gui", ex);
-                logToGui($"ERROR: {ex.Message}");
+                logToGui($"{opName}: ERROR ({ex.Message})");
             }
             finally
             {
-                unlockButtons();
+                unlockControls();
             }
         }
 
@@ -108,9 +117,10 @@ namespace f_server
 
         private async void buttonList_Click(object sender, EventArgs e)
         {
-            await invoke(async () => {
+            await invoke("List users", async () => {
                 var list = await _users.List();
-                logToGui(list.ToJson());
+                listUsers.Items.Clear();
+                listUsers.Items.AddRange(list);
             });
         }
 
@@ -118,7 +128,7 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await invoke(async () => {
+            await invoke($"Create {userInfo.UserName}", async () => {
                 await _users.Create(userInfo);
             });
         }
@@ -127,7 +137,7 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await invoke(async () => {
+            await invoke($"Update {userInfo.UserName}", async () => {
                 await _users.Update(userInfo);
             });
         }
@@ -136,14 +146,20 @@ namespace f_server
         {
             var userInfo = getUserInfo();
 
-            await invoke(async () => {
+            await invoke($"Delete {userInfo.UserName}", async () => {
                 await _users.Delete(userInfo);
             });
         }
 
-        private void ServerGui_Load(object sender, EventArgs e)
+        private void listUsers_SelectedIndexChanged(object sender, EventArgs e)
         {
+            var userAndFolder = (string) listUsers.SelectedItem;
+            var split = userAndFolder.Split(":");
 
+            textUserName.Text = split[0].Trim();
+
+            if (split.Length > 1)
+                textFolder.Text = split[1].Trim();
         }
     }
 }

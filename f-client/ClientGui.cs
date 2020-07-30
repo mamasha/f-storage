@@ -1,5 +1,6 @@
 ﻿using f_core;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -7,6 +8,8 @@ namespace f_client
 {
     public partial class ClientForm : Form
     {
+        private readonly Control[] _controlsToLock;
+
         public ClientForm()
         {
             InitializeComponent();
@@ -15,34 +18,42 @@ namespace f_client
 
             textServerName.Text = Environment.MachineName;
             textPort.Text = config.TcpPort.ToString();
+
+            _controlsToLock = new Control[] {
+                textServerName,
+                textPort,
+                textRemoteFileName,
+                textLocalPath,
+                buttonList,
+                buttonUpload,
+                buttonDownload,
+                buttonDelete,
+                textUserName,
+                textPassword,
+                buttonBrowse,
+                listFiles
+            };
         }
 
-        private void lockButtons()
+        private void lockControls()
         {
-            textServerName.Enabled = false;
-            textRemoteFileName.Enabled = false;
-            textLocalPath.Enabled = false;
-            buttonList.Enabled = false;
-            buttonUpload.Enabled = false;
-            buttonDownload.Enabled = false;
-            buttonDelete.Enabled = false;
+            Array.ForEach(_controlsToLock, 
+                control => control.Enabled = false);
         }
 
-        private void unlockButtons()
+        private void unlockControls()
         {
-            textServerName.Enabled = true;
-            textRemoteFileName.Enabled = true;
-            textLocalPath.Enabled = true;
-            buttonList.Enabled = true;
-            buttonUpload.Enabled = true;
-            buttonDownload.Enabled = true;
-            buttonDelete.Enabled = true;
+            Array.ForEach(_controlsToLock,
+                control => control.Enabled = true);
         }
 
-        private void log(string msg)
+        private void logToGui(string msg)
         {
             richTextResult.AppendText(msg);
             richTextResult.AppendText("\r\n");
+
+            richTextResult.SelectionStart = richTextResult.Text.Length;
+            richTextResult.ScrollToCaret();
         }
 
         private async Task<IClient> getClient()
@@ -57,65 +68,83 @@ namespace f_client
             return client;
         }
 
-        private async Task invoke(Func<IClient, Task> makeRequest)
+        private async Task invoke(string opName, Func<IClient, Task> makeRequest)
         {
-            lockButtons();
+            lockControls();
 
             try
             {
                 using (var client = await getClient())
                     await makeRequest(client);
+
+                logToGui($"{opName}: OK");
             }
             catch (Exception ex)
             {
-                log($"ERROR: {ex.Message}");
+                logToGui($"{opName}: ERROR {ex.Message}");
             }
             finally
             {
-                unlockButtons();
+                unlockControls();
             }
         }
 
         private async void buttonList_Click(object sender, EventArgs e)
         {
-            await invoke(async client => {
+            await invoke("List remote files", async client => {
                 var list = await client.ListFiles();
-                log(list.ToJson());
+                listFiles.Items.Clear();
+                listFiles.Items.AddRange(list);
             });
         }
 
         private async void buttonUpload_Click(object sender, EventArgs e)
         {
-            var fileName = textRemoteFileName.Text;
+            var fileName = Path.GetFileName(textRemoteFileName.Text);
             var srcPath = textLocalPath.Text;
+            var srcFileName = Path.GetFileName(srcPath);
 
-            await invoke(client =>
+            await invoke($"Upload {fileName}", client =>
                 client.Upload(fileName, srcPath)
             );
         }
 
         private async void buttonDownload_Click(object sender, EventArgs e)
         {
-            var fileName = textRemoteFileName.Text;
+            var fileName = Path.GetFileName(textRemoteFileName.Text);
             var dstPath = textLocalPath.Text;
 
-            await invoke(client =>
+            await invoke($"Download {fileName}", client =>
                 client.Download(fileName, dstPath)
             );
         }
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
-            var fileName = textRemoteFileName.Text;
+            var fileName = Path.GetFileName(textRemoteFileName.Text);
 
-            await invoke(client =>
+            await invoke($"Delete {fileName}", client =>
                 client.Delete(fileName)
             );
         }
 
-        private void ClientForm_Load(object sender, EventArgs e)
+        private void buttonBrowse_Click(object sender, EventArgs e)
         {
+            if (ofdLocalFile.ShowDialog() == DialogResult.OK)
+            {
+                textLocalPath.Text = ofdLocalFile.FileName;
+                textRemoteFileName.Text = Path.GetFileName(ofdLocalFile.FileName);
+            }
+        }
 
+        private void listFiles_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            textRemoteFileName.Text = (string) listFiles.SelectedItem;
+        }
+
+        private void textLocalPath_TextChanged(object sender, EventArgs e)
+        {
+            textRemoteFileName.Text = Path.GetFileName(textLocalPath.Text);
         }
     }
 }

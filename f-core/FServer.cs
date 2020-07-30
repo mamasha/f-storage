@@ -77,7 +77,12 @@ namespace f_core
             var user = await getUser(request);
             authenticate(user, request);
 
-            var fileList = Directory.GetFiles(user.Folder);
+            Directory.CreateDirectory(user.Folder);
+
+            var fileList = Directory
+                .GetFiles(user.Folder)
+                .Select(path => Path.GetFileName(path))
+                .ToArray();
 
             var response = makeResponse<SrvListResponse>(request);
 
@@ -159,7 +164,7 @@ namespace f_core
         {
             var queue =
                 from user in await _users.List()
-                select $"{user.UserName} '{user.Folder}'";
+                select $"{user.UserName}: {user.Folder}";
 
             var list = queue.ToArray();
 
