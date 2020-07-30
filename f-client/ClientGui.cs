@@ -49,7 +49,7 @@ namespace f_client
             var serverName = textServerName.Text;
             var port = int.Parse(textPort.Text);
             var userName = textUserName.Text;
-            var password = textPassword.Text.AsSha();
+            var password = textPassword.Text.Sha256();
 
             var client = await FClient.New(serverName, port, userName, password);
 

@@ -95,7 +95,7 @@ namespace f_server
         private UserInfo getUserInfo()
         {
             var userName = textUserName.Text;
-            var password = textPassword.Text;
+            var password = textPassword.Text.Sha256();
             var folder = textFolder.Text;
 
             return new UserInfo { 

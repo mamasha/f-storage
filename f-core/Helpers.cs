@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 
 [assembly: InternalsVisibleTo("f-nunit")]
 
@@ -46,9 +47,16 @@ namespace f_core
                 !string.IsNullOrEmpty(str);
         }
 
-        public static string AsSha(this string str)
+        public static string Sha256(this string str)
         {
-            return str;
+            var crypt = new SHA256Managed();
+            var hash = new StringBuilder();
+            byte[] crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(str));
+
+            foreach (byte theByte in crypto)
+                hash.Append(theByte.ToString("x2"));
+
+            return hash.ToString();
         }
 
         private static readonly Random _rand = new Random();
