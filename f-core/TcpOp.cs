@@ -16,17 +16,19 @@ namespace f_core
 
     class TcpOp : ITcpOp
     {
+        private readonly int _bufSize;
         private readonly Stream _tcp;
         private readonly StreamReader _reader;
         private readonly StreamWriter _writer;
 
-        public static ITcpOp New(Stream tcp)
+        public static ITcpOp New(int bufSize, Stream tcp)
         {
-            return new TcpOp(tcp);
+            return new TcpOp(bufSize, tcp);
         }
 
-        private TcpOp(Stream tcp)
+        private TcpOp(int bufSize, Stream tcp)
         {
+            _bufSize = bufSize;
             _tcp = tcp;
             _reader = new StreamReader(tcp);
             _writer = new StreamWriter(tcp);
@@ -35,22 +37,13 @@ namespace f_core
         async Task<string> ITcpOp.ReadString()
         {
             var str = await _reader.ReadLineAsync();
-
-            if (str == null)
-                throw new ApplicationException("Protocol error: null string");
-
             return str;
         }
 
         async Task<T> ITcpOp.Read<T>()
         {
             var json = await _reader.ReadLineAsync();
-
-            if (json == null)
-                throw new ApplicationException("Protocol error: null json");
-
-            return
-                json.Parse<T>();
+            return json.Parse<T>();
         }
 
         async Task ITcpOp.Write<T>(T data)
@@ -69,24 +62,27 @@ namespace f_core
 
         async Task ITcpOp.ReadBytesTo(Stream dst, long count)
         {
-            const int bufSize = 81920;
+            var left = count;
+            var buf = new byte[_bufSize];
 
-            var buf = new byte[bufSize];
-
-            while (count > 0)
+            while (left > 0)
             {
-                int chunk = (int) Math.Min(count, bufSize);
+                int chunk = (int) Math.Min(count, _bufSize);
 
-                await _tcp.ReadAsync(buf, 0, chunk);
-                await dst.WriteAsync(buf, 0, chunk);
+                var bytesRead = await _tcp.ReadAsync(buf, 0, chunk);
 
-                count -= chunk;
+                if (bytesRead == 0)
+                    throw new ApplicationException($"No more bytes in stream count={count} left={left}");
+
+                await dst.WriteAsync(buf, 0, bytesRead);
+
+                left -= bytesRead;
             }
         }
 
         async Task ITcpOp.WriteBytesFrom(Stream src, long count)
         {
-            await src.CopyToAsync(_tcp);
+            await src.CopyToAsync(_tcp, _bufSize);
             await _tcp.FlushAsync();
         }
     }

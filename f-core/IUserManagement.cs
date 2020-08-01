@@ -14,6 +14,6 @@ namespace f_core
         Task<string[]> List();
         Task Create(UserInfo user);
         Task Update(UserInfo user);
-        Task Delete(UserInfo user);
+        Task Delete(UserInfo user, bool withFiles);
     }
 }

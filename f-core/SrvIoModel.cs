@@ -9,6 +9,7 @@
         public string Password { get; set; }
         public string Command { get; set; }
 
+        public const string PING = "PING";
         public const string LIST = "LIST";
         public const string UPLOAD = "UPLOAD";
         public const string DOWNLOAD = "DOWNLOAD";
@@ -21,10 +22,17 @@
         public string Error { get; set; }
     }
 
+    class SrvPongResponse : SrvResponse
+    {
+    }
+
+    class SrvPingRequest : SrvRequest
+    {
+        public SrvPingRequest() { Command = PING; }
+    }
+
     class SrvListRequest : SrvRequest
     {
-        public int PageSize { get; set; }
-
         public SrvListRequest() { Command = LIST; }
     }
 
@@ -43,7 +51,9 @@
     }
 
     class SrvUploadResponse : SrvResponse
-    { }
+    {
+
+    }
 
     class SrvDownloadRequest : SrvRequest
     {

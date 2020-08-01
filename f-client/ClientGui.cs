@@ -9,6 +9,7 @@ namespace f_client
     public partial class ClientForm : Form
     {
         private readonly Control[] _controlsToLock;
+        private readonly MyClient _myClient;
 
         public ClientForm()
         {
@@ -18,6 +19,8 @@ namespace f_client
 
             textServerName.Text = Environment.MachineName;
             textPort.Text = config.TcpPort.ToString();
+
+            _myClient = new MyClient(config);
 
             _controlsToLock = new Control[] {
                 textServerName,
@@ -63,7 +66,14 @@ namespace f_client
             var userName = textUserName.Text;
             var password = textPassword.Text.Sha256();
 
-            var client = await FClient.New(serverName, port, userName, password);
+            var info = new ClientInfo { 
+                ServerName = serverName,
+                Port = port,
+                UserName = userName,
+                Password = password,
+            };
+
+            var client = await _myClient.GetInstance(info);
 
             return client;
         }
@@ -74,8 +84,8 @@ namespace f_client
 
             try
             {
-                using (var client = await getClient())
-                    await makeRequest(client);
+                var client = await getClient();
+                await makeRequest(client);
 
                 logToGui($"{opName}: OK");
             }

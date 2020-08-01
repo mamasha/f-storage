@@ -144,11 +144,22 @@ namespace f_server
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            var withFiles = checkWithFiles.Checked;
+
+            if (withFiles && DialogResult.Cancel ==
+                MessageBox.Show("Deleting all uploaded files...", "Warning", MessageBoxButtons.OKCancel))
+            {
+                checkWithFiles.Checked = false;
+                return;
+            }
+
             var userInfo = getUserInfo();
 
             await invoke($"Delete {userInfo.UserName}", async () => {
-                await _users.Delete(userInfo);
+                await _users.Delete(userInfo, withFiles);
             });
+
+            checkWithFiles.Checked = false;
         }
 
         private void listUsers_SelectedIndexChanged(object sender, EventArgs e)

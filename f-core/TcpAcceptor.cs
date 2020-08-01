@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -17,9 +18,12 @@ namespace f_core
     {
         private readonly int FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = 2000;
 
+        private readonly FConfig _config;
         private readonly ILogger _log;
         private readonly IServer _server;
         private readonly TcpListener _listener;
+
+        private volatile bool _isClosed;
 
         public static ITcpAcceptor New(FConfig config, ILogger log, IServer server)
         {
@@ -28,11 +32,12 @@ namespace f_core
 
         private TcpAcceptor(FConfig config, ILogger log, IServer server)
         {
-            FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.Server.FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT;
+            FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.Server.FAILED_TO_ACCEPT_TCP_RETRY_MILLISECONDS;
 
             var listener = new TcpListener(IPAddress.Any, config.TcpPort);
             listener.Start();
 
+            _config = config;
             _log = log;
             _server = server;
             _listener = listener;
@@ -51,6 +56,9 @@ namespace f_core
                 }
                 catch (Exception ex)
                 {
+                    if (_isClosed)
+                        break;
+
                     _log.Error("tcp.protocol", ex);
                     await Task.Delay(FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT);
                 }
@@ -63,21 +71,33 @@ namespace f_core
             {
                 switch (request.Command)
                 {
+                    case SrvRequest.PING:
+                        var pingRequest = jRequest.Parse<SrvPingRequest>();
+                        await _server.Ping(pingRequest, tcpOp);
+                        break;
+
                     case SrvRequest.LIST:
-                        await _server.ListFiles(jRequest.Parse<SrvListRequest>(), tcpOp);
+                        var listRequest = jRequest.Parse<SrvListRequest>();
+                        await _server.ListFiles(listRequest, tcpOp);
                         break;
 
                     case SrvRequest.UPLOAD:
-                        await _server.UploadFile(jRequest.Parse<SrvUploadRequest>(), tcpOp);
+                        var uploadRequest = jRequest.Parse<SrvUploadRequest>();
+                        await _server.UploadFile(uploadRequest, tcpOp);
                         break;
 
                     case SrvRequest.DOWNLOAD:
-                        await _server.DownloadFile(jRequest.Parse<SrvDownloadRequest>(), tcpOp);
+                        var downloadRequest = jRequest.Parse<SrvDownloadRequest>();
+                        await _server.DownloadFile(downloadRequest, tcpOp);
                         break;
 
                     case SrvRequest.DELETE:
-                        await _server.DeleteFile(jRequest.Parse<SrvDeleteRequest>(), tcpOp);
+                        var deleteRequest = jRequest.Parse<SrvDeleteRequest>();
+                        await _server.DeleteFile(deleteRequest, tcpOp);
                         break;
+
+                    default:
+                        throw new IOException($"Unknown command: {request.Command}");
                 }
 
                 return true;
@@ -99,11 +119,15 @@ namespace f_core
         {
             try
             {
+                var tcpOp = TcpOp.New(_config.BinaryStreamBufSize, tcpClient.GetStream());
+
                 for (;;)
                 {
-                    var tcpOp = TcpOp.New(tcpClient.GetStream());
-
                     var jRequest = await tcpOp.ReadString();
+
+                    if (jRequest.IsEmpty())
+                        break;
+
                     var request = jRequest.Parse<SrvRequest>();
 
                     bool ok = await dispathRequest(request, jRequest, tcpOp);
@@ -114,7 +138,8 @@ namespace f_core
             }
             catch (Exception ex)
             {
-                _log.Error("tcp.protocol", ex);
+                if (_isClosed == false)
+                    _log.Error("tcp.protocol", ex);
             }
             finally
             {
@@ -142,6 +167,8 @@ namespace f_core
 
         void ITcpAcceptor.Close()
         {
+            _isClosed = true;
+
             try
             {
                 _listener.Stop();

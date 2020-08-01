@@ -5,50 +5,56 @@ using System.Threading.Tasks;
 
 namespace f_core
 {
-    public interface IClient : IDisposable
+    public struct ClientInfo
     {
+        public string ServerName { get; set; }
+        public int Port { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+    }
+
+    public interface IClient
+    {
+        Task Ping();
         Task<string[]> ListFiles();
         Task Upload(string fileName, string srcPath);
         Task Download(string fileName, string dstPath);
         Task Delete(string fileName);
+        void Close();
     }
 
     public class FClient : IClient
     {
-        private readonly string _serverName;
-        private readonly int _port;
-        private readonly string _userName;
-        private readonly string _password;
+        private readonly FConfig _config;
+        private readonly ClientInfo _info;
 
         private readonly TcpClient _tcpClient;
 
-        public static async Task<IClient> New(string serverName, int port, string userName, string password)
+        public static async Task<IClient> New(FConfig config, ClientInfo info)
         {
             var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(serverName, port);
+            await tcpClient.ConnectAsync(info.ServerName, info.Port);
 
-            return new FClient(serverName, port, userName, password, tcpClient);
+            return new FClient(config, info, tcpClient);
         }
 
-        private FClient(string serverName, int port, string userName, string password, TcpClient tcpClient)
+        private FClient(FConfig config, ClientInfo info, TcpClient tcpClient)
         {
-            _serverName = serverName;
-            _port = port;
-            _userName = userName;
-            _password = password;
+            _config = config;
+            _info = info;
             _tcpClient = tcpClient;
         }
 
         private ITcpOp startTcpOp(SrvRequest request)
         {
             request.TrackingId = Helpers.MakeTrackingId();
-            request.ServerName = _serverName;
-            request.Port = _port;
-            request.UserName = _userName;
-            request.Password = _password;
+            request.ServerName = _info.ServerName;
+            request.Port = _info.Port;
+            request.UserName = _info.UserName;
+            request.Password = _info.Password;
 
             return
-                TcpOp.New(_tcpClient.GetStream());
+                TcpOp.New(_config.BinaryStreamBufSize, _tcpClient.GetStream());
         }
 
         private void validate(SrvResponse response)
@@ -60,14 +66,16 @@ namespace f_core
                 throw new ApplicationException(response.Error);
         }
 
-        void IDisposable.Dispose()
-        { 
-            try
-            {
-                _tcpClient.Close();
-            }
-            catch (Exception)
-            { }
+        async Task IClient.Ping()
+        {
+            var request = new SrvPingRequest();
+
+            var tcpOp = startTcpOp(request);
+
+            await tcpOp.Write(request);
+
+            var response = await tcpOp.Read<SrvPongResponse>();
+            validate(response);
         }
 
         async Task<string[]> IClient.ListFiles()
@@ -76,12 +84,9 @@ namespace f_core
 
             var tcpOp = startTcpOp(request);
 
-            var jRequest = request.ToJson();
-            await tcpOp.WriteString(jRequest);
+            await tcpOp.Write(request);
 
-            var jResponse = await tcpOp.ReadString();
-            var response = jResponse.Parse<SrvListResponse>();
-
+            var response = await tcpOp.Read<SrvListResponse>();
             validate(response);
 
             return response.FileNames;
@@ -98,16 +103,15 @@ namespace f_core
 
             var tcpOp = startTcpOp(request);
 
-            var jRequest = request.ToJson();
-            await tcpOp.WriteString(jRequest);
+            await tcpOp.Write(request);
+
+            var response = await tcpOp.Read<SrvUploadResponse>();
+            validate(response);
 
             await tcpOp.WriteBytesFrom(file, file.Length);
-
             file.Close();
 
-            var jResponse = await tcpOp.ReadString();
-            var response = jResponse.Parse<SrvUploadResponse>();
-
+            response = await tcpOp.Read<SrvUploadResponse>();
             validate(response);
         }
 
@@ -120,12 +124,9 @@ namespace f_core
 
             var tcpOp = startTcpOp(request);
 
-            var jRequest = request.ToJson();
-            await tcpOp.WriteString(jRequest);
+            await tcpOp.Write(request);
 
-            var jResponse = await tcpOp.ReadString();
-            var response = jResponse.Parse<SrvDownloadResponse>();
-
+            var response = await tcpOp.Read<SrvDownloadResponse>();
             validate(response);
 
             var file = File.Open(dstPath, FileMode.Create);
@@ -143,13 +144,20 @@ namespace f_core
 
             var tcpOp = startTcpOp(request);
 
-            var jRequest = request.ToJson();
-            await tcpOp.WriteString(jRequest);
+            await tcpOp.Write(request);
 
-            var jResponse = await tcpOp.ReadString();
-            var response = jResponse.Parse<SrvDeleteResponse>();
-
+            var response = await tcpOp.Read<SrvDeleteResponse>();
             validate(response);
+        }
+
+        void IClient.Close()
+        { 
+            try
+            {
+                _tcpClient.Close();
+            }
+            catch (Exception)
+            { }
         }
     }
 }

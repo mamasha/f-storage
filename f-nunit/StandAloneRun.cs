@@ -37,7 +37,12 @@ namespace f_nunit
             var all = await users.List();
             Assert.That(all, Is.Not.Empty);
 
-            var fclient = await FClient.New(fserver.ServerName, fserver.Port, "goga", "aabbcc");
+            var fclient = await FClient.New(config, new ClientInfo { 
+                ServerName = fserver.ServerName, 
+                Port = fserver.Port, 
+                UserName = "goga", 
+                Password = "aabbcc" 
+            });
 
             await fclient.Upload("f-config.goga.json", "f-config.json");
             await fclient.Upload("NUnit3.TestAdapter.dll.goga", "NUnit3.TestAdapter.dll");
@@ -50,7 +55,7 @@ namespace f_nunit
 
             await fclient.Delete("f-config.goga.json");
 
-            await users.Delete(_goga);
+            await users.Delete(_goga, false);
         }
 
         [Test]
@@ -67,7 +72,12 @@ namespace f_nunit
             var all = await users.List();
             Assert.That(all, Is.Not.Empty);
 
-            var fclient = await FClient.New(fserver.ServerName, fserver.Port, "goga", "aabbcc");
+            var fclient = await FClient.New(config, new ClientInfo { 
+                ServerName = fserver.ServerName, 
+                Port = fserver.Port, 
+                UserName = "goga", 
+                Password = "aabbcc" 
+            });
 
             await fclient.Upload("f-config.goga.json", "f-config.json");
             await fclient.Upload("NUnit3.TestAdapter.dll.goga", "NUnit3.TestAdapter.dll");
@@ -80,7 +90,7 @@ namespace f_nunit
 
             await fclient.Delete("f-config.goga.json");
 
-            await users.Delete(_goga);
+            await users.Delete(_goga, true);
         }
     }
 }

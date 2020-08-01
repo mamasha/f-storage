@@ -5,10 +5,10 @@
 - [Server side Gui](#server-side-gui)
 - [High level design](#high-level-design)
 - [Software layers](#software-layers)
+- [Protocol](#protocol)
 - [Threading model](#threading-model)
 - [Error handling](#error-handling)
 - [Life time span](#life-time-span)
-- [Protocol](#protocol)
 - [Coding convention](#coding-convention)
 - [Project structure](#project-structure)
 - [Programming to interfaces](#programming-to-interfaces)
@@ -50,6 +50,17 @@
 ---
 
 
+### Protocol
+
+- Requests and responses are transferred as json
+- Each request type has its own protocol
+- File content is transferred as binary stream
+
+![](./protocol.png)
+
+---
+
+
 ### Threading model
 
 The essence of this project is IO bounded operations
@@ -77,13 +88,6 @@ Trade-off: re-using of an open connection vs simple programing model
 - A Database connection is reused
 - On server side life span of objects is as application life span
 - On client life span of objects is as a request life span
-
-
-### Protocol
-
-- Requests and responses are transferred as json
-- Each request type has its own protocol
-- File content is transferred as binary stream
 
 
 ### Coding convention

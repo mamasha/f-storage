@@ -10,17 +10,20 @@ namespace f_core
         public ClientSide Client { get; set; } = new ClientSide();
         public SqliteDb Sqlite { get; set; } = new SqliteDb();
 
+        public int BinaryStreamBufSize = 1 << 20;   // Mb
+
         public class ServerSide
         {
             public string RootStorageFolder { get; set; } = ".";
             public string LogFileName { get; set; } = "f-server.log";
-            public int DelayBeforeClose { get; set; } = 1000;
+            public int DelayBeforeCloseMilliseconds { get; set; } = 1000;
 
-            public int FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT { get; set; } = 2000;
+            public int FAILED_TO_ACCEPT_TCP_RETRY_MILLISECONDS { get; set; } = 2000;
         }
 
         public class ClientSide
         {
+            public int NeedsPingPongSeconds { get; set; } = 15;
         }
 
         public class SqliteDb

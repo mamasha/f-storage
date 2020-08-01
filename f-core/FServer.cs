@@ -9,6 +9,7 @@ namespace f_core
 {
     interface IServer
     {
+        Task Ping(SrvPingRequest request, ITcpOp tcpOp);
         Task ListFiles(SrvListRequest request, ITcpOp tcpOp);
         Task UploadFile(SrvUploadRequest request, ITcpOp tcpOp);
         Task DownloadFile(SrvDownloadRequest request, ITcpOp tcpOp);
@@ -70,8 +71,21 @@ namespace f_core
             _log.Stop();
         }
 
+        async Task IServer.Ping(SrvPingRequest request, ITcpOp tcpOp)
+        {
+            validate(request);
+
+            var user = await getUser(request);
+            authenticate(user, request);
+
+            var response = makeResponse<SrvPongResponse>(request);
+            await tcpOp.Write(response);
+        }
+
         async Task IServer.ListFiles(SrvListRequest request, ITcpOp tcpOp)
         {
+            _log.Info(request.TrackingId, request);
+
             validate(request);
 
             var user = await getUser(request);
@@ -85,16 +99,16 @@ namespace f_core
                 .ToArray();
 
             var response = makeResponse<SrvListResponse>(request);
-
             response.FileNames = fileList;
-
             await tcpOp.Write(response);
 
-            _log.Info(request.TrackingId, new { request, response });
+            _log.Info(request.TrackingId, response);
         }
 
         async Task IServer.UploadFile(SrvUploadRequest request, ITcpOp tcpOp)
         {
+            _log.Info(request.TrackingId, request);
+
             validate(request);
 
             var user = await getUser(request);
@@ -105,19 +119,23 @@ namespace f_core
 
             var file = File.Open(dstPath, FileMode.Create);
 
+            var response = makeResponse<SrvUploadResponse>(request);
+            await tcpOp.Write(response);
+
             await tcpOp.ReadBytesTo(file, request.FileSize);
 
+            file.Flush();
             file.Close();
-
-            var response = makeResponse<SrvUploadResponse>(request);
 
             await tcpOp.Write(response);
 
-            _log.Info(request.TrackingId, new { request, response });
+            _log.Info(request.TrackingId, response);
         }
 
         async Task IServer.DownloadFile(SrvDownloadRequest request, ITcpOp tcpOp)
         {
+            _log.Info(request.TrackingId, request);
+
             validate(request);
 
             var user = await getUser(request);
@@ -132,18 +150,19 @@ namespace f_core
 
             var response = makeResponse<SrvDownloadResponse>(request);
             response.FileSize = file.Length;
-
             await tcpOp.Write(response);
 
             await tcpOp.WriteBytesFrom(file, file.Length);
 
             file.Close();
 
-            _log.Info(request.TrackingId, new { request, response });
+            _log.Info(request.TrackingId, response);
         }
 
         async Task IServer.DeleteFile(SrvDeleteRequest request, ITcpOp tcpOp)
         {
+            _log.Info(request.TrackingId, request);
+
             validate(request);
 
             var user = await getUser(request);
@@ -151,13 +170,15 @@ namespace f_core
 
             var path = makeFilePath(user, request.FileName);
 
+            if (!File.Exists(path))
+                throw new ApplicationException($"'{request.FileName}' is not found");
+
             File.Delete(path);
 
             var response = makeResponse<SrvDeleteResponse>(request);
-
             await tcpOp.Write(response);
 
-            _log.Info(request.TrackingId, new { request, response });
+            _log.Info(request.TrackingId, response);
         }
 
         async Task<string[]> IUserManagement.List()
@@ -187,11 +208,14 @@ namespace f_core
             _log.Info("fserver.gui", $"User '{user.UserName}' is updated");
         }
 
-        async Task IUserManagement.Delete(UserInfo user)
+        async Task IUserManagement.Delete(UserInfo user, bool withFiles)
         {
             await _users.Delete(user);
 
-            _log.Info("fserver.gui", $"User '{user.UserName}' is deleted");
+            if (withFiles)
+                Directory.Delete(user.Folder, withFiles);
+
+            _log.Info("fserver.gui", $"User '{user.UserName}' is deleted (withFiles={withFiles})");
         }
 
         public string ServerName { get { return _tcpAcceptor.ServerName; } }
@@ -204,7 +228,7 @@ namespace f_core
                 _users.Close();
                 _tcpAcceptor.Close();
 
-                Thread.Sleep(_config.Server.DelayBeforeClose);
+                Thread.Sleep(_config.Server.DelayBeforeCloseMilliseconds);
 
                 _log.Stop();
             }
