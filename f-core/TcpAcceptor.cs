@@ -34,8 +34,18 @@ namespace f_core
         {
             FAILED_TO_ACCEPT_TCP_RETRY_TIMEOUT = config.Server.FAILED_TO_ACCEPT_TCP_RETRY_MILLISECONDS;
 
-            var listener = new TcpListener(IPAddress.Any, config.TcpPort);
-            listener.Start();
+            TcpListener listener;
+
+            try
+            {
+                listener = new TcpListener(IPAddress.Any, config.TcpPort);
+                listener.Start();
+            }
+            catch (Exception ex)
+            {
+                log.Error("tcp.acceptor", ex);
+                throw;
+            }
 
             _config = config;
             _log = log;

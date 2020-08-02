@@ -238,6 +238,7 @@
             this.Controls.Add(this.buttonDelete);
             this.Name = "ServerGui";
             this.Text = "ServerGui";
+            this.Load += new System.EventHandler(this.ServerGui_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

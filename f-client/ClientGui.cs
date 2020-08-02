@@ -102,8 +102,8 @@ namespace f_client
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await invoke("List remote files", async client => {
-                var list = await client.ListFiles();
                 listFiles.Items.Clear();
+                var list = await client.ListFiles();
                 listFiles.Items.AddRange(list);
             });
         }
@@ -155,6 +155,11 @@ namespace f_client
         private void textLocalPath_TextChanged(object sender, EventArgs e)
         {
             textRemoteFileName.Text = Path.GetFileName(textLocalPath.Text);
+        }
+
+        private void ClientForm_Load(object sender, EventArgs e)
+        {
+            ActiveControl = label1;
         }
     }
 }

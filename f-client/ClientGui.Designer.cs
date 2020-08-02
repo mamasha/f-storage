@@ -261,6 +261,7 @@
             this.Controls.Add(this.textServerName);
             this.Name = "ClientForm";
             this.Text = "ClientGui";
+            this.Load += new System.EventHandler(this.ClientForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

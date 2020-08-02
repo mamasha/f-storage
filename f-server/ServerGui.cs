@@ -118,8 +118,8 @@ namespace f_server
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await invoke("List users", async () => {
-                var list = await _users.List();
                 listUsers.Items.Clear();
+                var list = await _users.List();
                 listUsers.Items.AddRange(list);
             });
         }
@@ -171,6 +171,11 @@ namespace f_server
 
             if (split.Length > 1)
                 textFolder.Text = split[1].Trim();
+        }
+
+        private void ServerGui_Load(object sender, EventArgs e)
+        {
+            ActiveControl = label1;
         }
     }
 }
